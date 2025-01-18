@@ -1,29 +1,34 @@
 #pragma once
 
-#include <memory>  // if you want to store pointers
-#include <vector>  // or however you store entities
+#include <string>
+#include <glm/glm.hpp>
 
-// Forward-declare or include your entity/mesh/whatever types
-class Entity;
+// Forward declaration of your Object class
+class Object;
 
-class Graphics {
+class Graphics
+{
 public:
     Graphics();
     ~Graphics();
 
-    // Called at the start of each frame to set up drawing
+    // Prepares the frame (e.g., clears color/depth buffers)
     void beginFrame();
 
-    // Draw a single entity (or model, sprite, etc.)
-    void draw(const Entity& entity);
+    // Draws the given Object using the specified model matrix
+    void draw(const Object& object, const glm::mat4& modelMatrix);
 
-    // End the frame
+    // Ends the frame (post-processing, etc. if desired)
     void endFrame();
 
 private:
-    unsigned int m_VAO;
-    unsigned int m_VBO;
-    unsigned int m_shaderProgram;
-    // Store your shader programs, buffers, etc. here
-    // e.g. unsigned int m_defaultShader;
+    unsigned int m_shaderProgram = 0;
+
+    // Optionally, store window size or camera data if needed...
+
+private:
+    // Helper functions to load/compile/link shaders
+    static std::string readFile(const std::string& filePath);
+    static unsigned int compileShader(unsigned int type, const std::string& source);
+    static unsigned int createShaderProgram(const std::string& vertexPath, const std::string& fragmentPath);
 };
