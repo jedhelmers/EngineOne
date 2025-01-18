@@ -7,6 +7,9 @@ public:
     Object();
     virtual ~Object();
 
+    // Returns AABB in local (object) space
+    // virtual AABB getLocalBounds() const = 0;
+
     // Called to upload vertex data to GPU (bind + buffer data + attribute setup).
     // Typically, you'd call this inside the constructor of a derived class once the
     // vertex data is known.

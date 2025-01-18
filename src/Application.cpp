@@ -153,12 +153,19 @@ bool Application::init()
     // 8) Create scene objects
     {
         // Example: create one Cube
-        auto cube = std::make_unique<Cube>();  // Will create VAO/VBO
+        // Will create VAO/VBO
+        auto cube = std::make_unique<Cube>();
         m_sceneObjects.push_back(std::move(cube));
 
         // Corresponding transform (identity)
         glm::mat4 model = glm::mat4(1.0f);
         m_objectTransforms.push_back(model);
+
+        auto cube2 = std::make_unique<Cube>();
+        m_sceneObjects.push_back(std::move(cube2));
+
+        glm::mat4 model2 = glm::mat4(0.5f);
+        m_objectTransforms.push_back(model2);
     }
 
     return true;
@@ -193,9 +200,7 @@ void Application::update()
     angle += 0.01f;
 
     if (!m_objectTransforms.empty()) {
-        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f),
-                                         angle,
-                                         glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
         m_objectTransforms[0] = rotation;
     }
 
