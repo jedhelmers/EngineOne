@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <glm/glm.hpp>
+#include <glad/glad.h>
 #include "Graphics.hpp"
 #include "Object.hpp"   // or "Cube.hpp" if you want direct access to Cube
 
@@ -25,6 +26,8 @@ public:
     void onScroll(double);
 
     void moveForward(double);
+
+    void renderCrosshair();
 
 private:
     // Private methods
@@ -51,6 +54,8 @@ private:
     // Window dimensions
     int m_windowWidth  = 800;
     int m_windowHeight = 600;
+
+    GLuint m_crosshairShader;
 
     // Scaling variables for the second cube
     float m_scaleFactor2 = 0.5f;         // Initial scale

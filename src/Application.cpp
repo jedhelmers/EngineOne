@@ -22,6 +22,39 @@ void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
     }
 }
 
+GLuint loadShader(const char* vertexPath, const char* fragmentPath) {
+    std::ifstream vertexFile(vertexPath);
+    std::ifstream fragmentFile(fragmentPath);
+
+    std::stringstream vShaderStream, fShaderStream;
+    vShaderStream << vertexFile.rdbuf();
+    fShaderStream << fragmentFile.rdbuf();
+
+    std::string vertexCode = vShaderStream.str();
+    std::string fragmentCode = fShaderStream.str();
+    const char* vShaderCode = vertexCode.c_str();
+    const char* fShaderCode = fragmentCode.c_str();
+
+    GLuint vertex, fragment;
+    vertex = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex, 1, &vShaderCode, nullptr);
+    glCompileShader(vertex);
+
+    fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment, 1, &fShaderCode, nullptr);
+    glCompileShader(fragment);
+
+    GLuint shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertex);
+    glAttachShader(shaderProgram, fragment);
+    glLinkProgram(shaderProgram);
+
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
+
+    return shaderProgram;
+}
+
 Application::Application()
 {
     // Nothing special here; we do all setup in init().
@@ -68,6 +101,13 @@ bool Application::init() {
 
     // Optional: set swap interval (VSync)
     glfwSwapInterval(1);
+
+    m_crosshairShader = loadShader("../shaders/crosshair_vertex.glsl", "../shaders/crosshair_fragment.glsl");
+
+    if (!m_crosshairShader) {
+        std::cerr << "Failed to load crosshair shader!" << std::endl;
+        return false;
+    }
 
     // 5) Create and initialize Graphics
     m_graphics = std::make_unique<Graphics>();
@@ -259,6 +299,8 @@ void Application::render() {
         m_graphics->draw(*m_sceneObjects[i], mvp, m_objectColors[i]);
     }
 
+    renderCrosshair();
+
     m_graphics->endFrame();
     glfwSwapBuffers(m_window);
 }
@@ -267,6 +309,46 @@ void Application::moveForward(double scrollOffset) {
     m_cameraPos += m_cameraFront * static_cast<float>(scrollOffset) * m_scrollSpeed;
 }
 
+void Application::renderCrosshair() {
+    static GLuint VAO = 0, VBO = 0;
+
+    if (VAO == 0) {
+        float crosshairVertices[] = {
+            // Horizontal line (centered)
+            -0.02f,  0.0f, 
+             0.02f,  0.0f, 
+             0.0f,  -0.02f, 
+             0.0f,   0.02f  
+        };
+
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(crosshairVertices), crosshairVertices, GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    // Use the loaded shader program
+    glUseProgram(m_crosshairShader);
+    glUniform1f(glGetUniformLocation(m_crosshairShader, "thickness"), 3.0f);
+
+    glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f);
+    GLint projLoc = glGetUniformLocation(m_crosshairShader, "uProjection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_LINES, 0, 4);
+    glBindVertexArray(0);
+
+    glUseProgram(0); // Reset shader state
+}
 
 // Helper method implementations
 
