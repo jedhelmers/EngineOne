@@ -161,8 +161,8 @@ void Application::processEvents() {
             m_cameraTarget.y += yOffset * panSpeed;
         } else {
             // Drag = Zoom
-            float zoomSpeed = 0.05f;
-            m_fov -= yOffset * zoomSpeed;
+            // float zoomSpeed = 0.05f;
+            // m_fov -= yOffset * zoomSpeed;
             // if (m_fov < 1.0f) m_fov = 1.0f;   // Limit zoom in
             // if (m_fov > 45.0f) m_fov = 45.0f; // Limit zoom out
         }

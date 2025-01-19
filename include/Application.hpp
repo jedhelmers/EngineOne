@@ -68,7 +68,7 @@ private:
     float m_cameraPitch = 0.0f; // No vertical angle initially
     float m_sensitivity = 0.1f;
     bool m_firstMouse = true;
-    float m_fov = 45.0f;
+    float m_fov = 150.0f;
     double m_lastX = 400.0; // Assuming a window width of 800
     double m_lastY = 300.0; // Assuming a window height of 600
 
