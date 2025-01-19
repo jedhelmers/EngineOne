@@ -15,6 +15,13 @@
 // Include your derived shape(s)
 #include "Cube.hpp"
 
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
+    Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    if (app) {
+        app->moveForward(yOffset);
+    }
+}
+
 Application::Application()
 {
     // Nothing special here; we do all setup in init().
@@ -28,8 +35,7 @@ Application::~Application() {
     glfwTerminate();
 }
 
-bool Application::init()
-{
+bool Application::init() {
     // 1) Initialize GLFW
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW\n";
@@ -75,38 +81,11 @@ bool Application::init()
 
     // 7) Create scene objects
     {
-        // Example: create one Cube
-        auto cube = std::make_unique<Cube>();  // Will create VAO/VBO
-        m_sceneObjects.push_back(std::move(cube));
-
-        // Corresponding transform (identity)
-        glm::mat4 model = glm::mat4(1.0f);
-        m_objectTransforms.push_back(model);
-
-        // Initial color (e.g., orange)
-        glm::vec4 color = glm::vec4(1.0f, 0.5f, 0.2f, 1.0f);
-        m_objectColors.push_back(color);
-
-        auto cube2 = std::make_unique<Cube>();  // Will create VAO/VBO
-        m_sceneObjects.push_back(std::move(cube2));
-
-        // Corresponding transform (identity)
-        glm::mat4 model2 = glm::mat4(1.0f);
-        m_objectTransforms.push_back(model2);
-
-        // Initial color (e.g., orange)
-        glm::vec4 color2 = glm::vec4(1.0f, 0.5f, 0.2f, 1.0f);
-        m_objectColors.push_back(color2);
+        addItem();
     }
 
-    glfwSetScrollCallback(m_window, [](GLFWwindow* window, double xOffset, double yOffset) {
-        // Get the application instance (store it somewhere accessible if needed)
-        Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-        if (app) {
-            app->onScroll(yOffset);
-        }
-    });
-    glfwSetWindowUserPointer(m_window, this); // Attach "this" to the GLFW window
+    glfwSetWindowUserPointer(m_window, this);
+    glfwSetScrollCallback(m_window, scrollCallback);
 
     return true;
 }
@@ -168,11 +147,27 @@ void Application::processEvents() {
         }
     }
 
+    if (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        m_cameraPos -= glm::normalize(glm::cross(m_cameraFront, m_cameraUp)) * m_movementSpeed;
+    }
+
+    if (glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        m_cameraPos += glm::normalize(glm::cross(m_cameraFront, m_cameraUp)) * m_movementSpeed;
+    }
+
+    if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS) {
+        m_cameraPos -= m_cameraUp * m_movementSpeed;
+    }
+
+    if (glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        m_cameraPos += m_cameraUp * m_movementSpeed;
+    }
+
     if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS) {
         double currentTime = glfwGetTime(); // Get current time
         if (currentTime - m_lastAddTime > m_debounceInterval) {
             m_lastAddTime = currentTime; // Update last action time
-            addItem(); // Add a new item
+            addItem();
         }
     }
 }
@@ -192,7 +187,6 @@ void Application::addItem() {
 
     std::cout << "Added a new item! Total items: " << m_sceneObjects.size() << std::endl;
 }
-
 
 void Application::update() {
     // --- Rotate the first cube ---
@@ -257,12 +251,8 @@ void Application::update() {
 void Application::render() {
     m_graphics->beginFrame();
 
-    // Adjust camera position for panning
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f) + m_cameraTarget;
-
-    // Calculate view and projection matrices
-    glm::mat4 view = glm::lookAt(cameraPos, m_cameraTarget, m_cameraUp);
-    glm::mat4 projection = glm::perspective(glm::radians(m_fov), 800.0f / 600.0f, 0.1f, 100.0f);
+    glm::mat4 view = glm::lookAt(m_cameraPos, m_cameraPos + m_cameraFront, m_cameraUp);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
     for (size_t i = 0; i < m_sceneObjects.size(); i++) {
         glm::mat4 mvp = projection * view * m_objectTransforms[i];
@@ -272,6 +262,11 @@ void Application::render() {
     m_graphics->endFrame();
     glfwSwapBuffers(m_window);
 }
+
+void Application::moveForward(double scrollOffset) {
+    m_cameraPos += m_cameraFront * static_cast<float>(scrollOffset) * m_scrollSpeed;
+}
+
 
 // Helper method implementations
 

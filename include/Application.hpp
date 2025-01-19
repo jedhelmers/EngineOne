@@ -24,6 +24,8 @@ public:
 
     void onScroll(double);
 
+    void moveForward(double);
+
 private:
     // Private methods
     void processEvents();
@@ -77,4 +79,7 @@ private:
 
     bool m_leftMousePressed = false; // To track left mouse button state
     glm::vec3 m_cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    float m_movementSpeed = 0.1f;  // Speed for keyboard movement
+    float m_scrollSpeed = 0.1f;    // Speed for trackpad movement
 };
