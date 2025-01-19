@@ -13,24 +13,28 @@
 // Include your Object header to access bind(), unbind(), getVertexCount()
 #include "Object.hpp"
 
-Graphics::Graphics()
-{
+Graphics::Graphics() {
     // 1) Create (compile/link) the shader program
-    //    Adjust the paths as needed for your project.
+    // Adjust the paths as needed for your project.
     m_shaderProgram = createShaderProgram(
         "../shaders/vertex.glsl",
         "../shaders/fragment.glsl"
     );
 
+    if (m_shaderProgram == 0) {
+        std::cerr << "Failed to create shader program." << std::endl;
+    }
+
     // 2) Set any default OpenGL state, if desired:
-    //    e.g. glEnable(GL_DEPTH_TEST);
     glEnable(GL_DEPTH_TEST);
 
     // 3) Potentially configure more states (blending, culling, etc.)
+    // Enable blending for transparency
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-Graphics::~Graphics()
-{
+Graphics::~Graphics() {
     // Delete the shader program if it was created
     if (m_shaderProgram) {
         glDeleteProgram(m_shaderProgram);
@@ -38,53 +42,33 @@ Graphics::~Graphics()
     }
 }
 
-void Graphics::beginFrame()
-{
+void Graphics::beginFrame() {
     // Clear the screen (color + depth) each frame
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Graphics::draw(const Object& object, const glm::mat4& modelMatrix)
-{
-    // 1) Use our shader
+void Graphics::draw(const Object& object, const glm::mat4& mvp, const glm::vec4& color) {
     glUseProgram(m_shaderProgram);
 
-    // 2) Build or retrieve a view + projection matrix
-    //    (Here we do a simple, static camera for demonstration.)
-    //    In a real app, you might pass these from outside or store them in Graphics.
-    glm::mat4 view = glm::lookAt(
-        glm::vec3(2.0f, 2.0f, 2.0f), // camera position
-        glm::vec3(0.0f, 0.0f, 0.0f), // look at origin
-        glm::vec3(0.0f, 1.0f, 0.0f)  // up vector
-    );
-    glm::mat4 projection = glm::perspective(
-        glm::radians(45.0f),        // FOV
-        800.0f / 600.0f,            // aspect ratio
-        0.1f, 100.0f                // near, far planes
-    );
-
-    // Combine into MVP
-    glm::mat4 mvp = projection * view * modelMatrix;
-
-    // 3) Upload MVP to the shader uniform
+    // Upload MVP matrix
     GLint mvpLoc = glGetUniformLocation(m_shaderProgram, "uMVP");
     glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 
-    // 4) Bind the Object's VAO
+    // Upload color
+    GLint colorLoc = glGetUniformLocation(m_shaderProgram, "uColor");
+    glUniform4fv(colorLoc, 1, glm::value_ptr(color));
+
+    // Bind and draw object
     object.bind();
-
-    // 5) Draw the object
     glDrawArrays(GL_TRIANGLES, 0, object.getVertexCount());
-
-    // 6) Unbind
     object.unbind();
 }
 
 void Graphics::endFrame()
 {
-    // If you do post-processing or multiple passes, handle them here.
-    // Otherwise, might be empty.
+    // If you do post-processing or nothing
+    // Currently empty
 }
 
 // ----------------------------------------------------------------------------
@@ -134,11 +118,11 @@ unsigned int Graphics::createShaderProgram(const std::string& vertexPath, const 
         return 0;
     }
 
-    // Compile
+    // Compile shaders
     unsigned int vertexShader   = compileShader(GL_VERTEX_SHADER, vertexSource);
     unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
 
-    // Link
+    // Link shaders into a program
     unsigned int program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);

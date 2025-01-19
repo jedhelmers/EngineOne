@@ -15,73 +15,6 @@
 // Include your derived shape(s)
 #include "Cube.hpp"
 
-// --------------
-// Helper methods
-// --------------
-std::string Application::readFile(const std::string& filePath) {
-    std::ifstream file(filePath);
-    if (!file.is_open()) {
-        std::cerr << "Could not open file: " << filePath << std::endl;
-        return {};
-    }
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
-}
-
-unsigned int Application::createShaderProgram(const std::string& vertexSource,
-                                              const std::string& fragmentSource)
-{
-    // 1) Compile vertex shader
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    const char* vsrc = vertexSource.c_str();
-    glShaderSource(vertexShader, 1, &vsrc, nullptr);
-    glCompileShader(vertexShader);
-
-    GLint success;
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-        std::cerr << "ERROR::VERTEX_SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // 2) Compile fragment shader
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* fsrc = fragmentSource.c_str();
-    glShaderSource(fragmentShader, 1, &fsrc, nullptr);
-    glCompileShader(fragmentShader);
-
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        std::cerr << "ERROR::FRAGMENT_SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // 3) Link shaders into a program
-    GLuint program = glCreateProgram();
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
-    glLinkProgram(program);
-
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetProgramInfoLog(program, 512, nullptr, infoLog);
-        std::cerr << "ERROR::SHADER_PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-
-    // 4) Cleanup intermediate shader objects
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return program;
-}
-
-// --------------
-// Application
-// --------------
 Application::Application()
 {
     // Nothing special here; we do all setup in init().
@@ -132,47 +65,53 @@ bool Application::init()
 
     // 5) Create and initialize Graphics
     m_graphics = std::make_unique<Graphics>();
-    // (If Graphics has its own shader creation inside, skip next steps;
-    // otherwise we can pass the program from here to Graphics.)
-
-    // 6) Load your shader files (if you want to create the shader in Application)
-    std::string vertexSrc   = readFile("../shaders/vertex.glsl");
-    std::string fragmentSrc = readFile("../shaders/fragment.glsl");
-    if (vertexSrc.empty() || fragmentSrc.empty()) {
-        std::cerr << "Shader source is empty; check file paths.\n";
+    if (!m_graphics) {
+        std::cerr << "Failed to create Graphics object!\n";
         return false;
     }
-    unsigned int shaderProgram = createShaderProgram(vertexSrc, fragmentSrc);
 
-    // If your Graphics expects a "setShaderProgram(...)" you might do:
-    // m_graphics->setShaderProgram(shaderProgram);
-
-    // 7) Enable some basic GL states
+    // 6) Enable some basic GL states
     glEnable(GL_DEPTH_TEST);
 
-    // 8) Create scene objects
+    // 7) Create scene objects
     {
         // Example: create one Cube
-        // Will create VAO/VBO
-        auto cube = std::make_unique<Cube>();
+        auto cube = std::make_unique<Cube>();  // Will create VAO/VBO
         m_sceneObjects.push_back(std::move(cube));
 
         // Corresponding transform (identity)
         glm::mat4 model = glm::mat4(1.0f);
         m_objectTransforms.push_back(model);
 
-        auto cube2 = std::make_unique<Cube>();
+        // Initial color (e.g., orange)
+        glm::vec4 color = glm::vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        m_objectColors.push_back(color);
+
+        auto cube2 = std::make_unique<Cube>();  // Will create VAO/VBO
         m_sceneObjects.push_back(std::move(cube2));
 
-        glm::mat4 model2 = glm::mat4(0.5f);
+        // Corresponding transform (identity)
+        glm::mat4 model2 = glm::mat4(1.0f);
         m_objectTransforms.push_back(model2);
+
+        // Initial color (e.g., orange)
+        glm::vec4 color2 = glm::vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        m_objectColors.push_back(color2);
     }
+
+    glfwSetScrollCallback(m_window, [](GLFWwindow* window, double xOffset, double yOffset) {
+        // Get the application instance (store it somewhere accessible if needed)
+        Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+        if (app) {
+            app->onScroll(yOffset);
+        }
+    });
+    glfwSetWindowUserPointer(m_window, this); // Attach "this" to the GLFW window
 
     return true;
 }
 
-void Application::run()
-{
+void Application::run() {
     // Main loop
     while (!glfwWindowShouldClose(m_window)) {
         processEvents();
@@ -181,51 +120,216 @@ void Application::run()
     }
 }
 
-void Application::processEvents()
-{
+void Application::onScroll(double yOffset) {
+    m_fov -= static_cast<float>(yOffset);
+    if (m_fov < 1.0f) m_fov = 1.0f;   // Limit zoom in
+    if (m_fov > 45.0f) m_fov = 45.0f; // Limit zoom out
+}
+
+void Application::processEvents() {
     glfwPollEvents();
 
-    // If you want to close the window on Escape, for example:
     if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(m_window, true);
     }
 
-    // Handle other input here...
+    // Detect mouse button state
+    if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        if (!m_leftMousePressed) {
+            m_leftMousePressed = true;
+            glfwGetCursorPos(m_window, &m_lastX, &m_lastY); // Initialize mouse position
+        }
+    } else {
+        m_leftMousePressed = false;
+        m_firstMouse = true; // Reset for future drags
+    }
+
+    // Handle mouse movement when button is pressed
+    if (m_leftMousePressed) {
+        double xpos, ypos;
+        glfwGetCursorPos(m_window, &xpos, &ypos);
+
+        float xOffset = xpos - m_lastX;
+        float yOffset = ypos - m_lastY;
+        m_lastX = xpos;
+        m_lastY = ypos;
+
+        if (glfwGetKey(m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+            // Shift + Drag = Pan
+            float panSpeed = 0.01f; // Adjust for sensitivity
+            m_cameraTarget.x -= xOffset * panSpeed;
+            m_cameraTarget.y += yOffset * panSpeed;
+        } else {
+            // Drag = Zoom
+            float zoomSpeed = 0.05f;
+            m_fov -= yOffset * zoomSpeed;
+            // if (m_fov < 1.0f) m_fov = 1.0f;   // Limit zoom in
+            // if (m_fov > 45.0f) m_fov = 45.0f; // Limit zoom out
+        }
+    }
+
+    if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS) {
+        double currentTime = glfwGetTime(); // Get current time
+        if (currentTime - m_lastAddTime > m_debounceInterval) {
+            m_lastAddTime = currentTime; // Update last action time
+            addItem(); // Add a new item
+        }
+    }
 }
 
-void Application::update()
-{
-    // Example: rotate the first object in the scene
+void Application::addItem() {
+    // Create a new Cube
+    auto cube = std::make_unique<Cube>();
+    m_sceneObjects.push_back(std::move(cube));
+
+    // Initialize its transform (identity matrix for now)
+    glm::mat4 model = glm::mat4(1.0f);
+    m_objectTransforms.push_back(model);
+
+    // Assign a random color
+    glm::vec4 color = glm::vec4(static_cast<float>(rand()) / RAND_MAX, static_cast<float>(rand()) / RAND_MAX, static_cast<float>(rand()) / RAND_MAX, 1.0f);
+    m_objectColors.push_back(color);
+
+    std::cout << "Added a new item! Total items: " << m_sceneObjects.size() << std::endl;
+}
+
+
+void Application::update() {
+    // --- Rotate the first cube ---
     static float angle = 0.0f;
     angle += 0.01f;
 
     if (!m_objectTransforms.empty()) {
+        // Create a rotation matrix around the Y-axis
         glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
         m_objectTransforms[0] = rotation;
     }
 
-    // If you had more objects, you'd update them likewise or store per-object transforms
-}
+    // --- Dynamic Scaling of the Second Cube ---
+    // Check if the second cube exists
+    // if (m_objectTransforms.size() >= 2) {
+    //     // Update scale factor
+    //     if (m_scalingUp2) {
+    //         m_scaleFactor2 += m_scaleSpeed2;
+    //         if (m_scaleFactor2 >= 1.0f) {  // Maximum scale
+    //             m_scalingUp2 = false;
+    //         }
+    //     }
+    //     else {
+    //         m_scaleFactor2 -= m_scaleSpeed2;
+    //         if (m_scaleFactor2 <= 0.5f) {  // Minimum scale
+    //             m_scalingUp2 = true;
+    //         }
+    //     }
 
-void Application::render()
-{
-    // 1) Start the frame
-    m_graphics->beginFrame(); 
-    //   -> Typically calls glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT), etc.
+    //     // Recompute the model matrix with the new scale
+    //     glm::mat4 model2 = glm::mat4(1.0f);
+    //     model2 = glm::scale(model2, glm::vec3(0.975f, 0.975f, 0.975f));
+    //     m_objectTransforms[1] = model2;
+    // }
 
-    // 2) Draw each object with its transform
-    for (size_t i = 0; i < m_sceneObjects.size(); i++) {
-        // For this to work, your Graphics class needs something like:
-        //   void draw(const Object& object, const glm::mat4& model);
-        // which sets up the shader's uniforms (MVP, etc.) and calls glDrawArrays.
-        //
-        // Example:
-        m_graphics->draw(*m_sceneObjects[i], m_objectTransforms[i]);
+    // --- Update Colors ---
+    if (!m_objectColors.empty()) {
+        // Compute color components using sine and cosine for smooth transitions
+        float red   = (sin(angle) + 1.0f) / 2.0f; // Varies between 0 and 1
+        float green = (cos(angle) + 1.0f) / 2.0f;
+        float blue  = (sin(angle * 0.5f) + 1.0f) / 2.0f;
+
+        // Update the color for the first cube
+        m_objectColors[0] = glm::vec4(red, green, blue, 1.0f); // Alpha is 1.0f
     }
 
-    // 3) End the frame
-    m_graphics->endFrame();
+    glm::vec3 translationOffset(1.125f, 0.0f, 0.0f); // Adjust spacing as needed
 
-    // 4) Swap buffers
+    for (size_t i = 0; i < m_objectTransforms.size(); ++i) {
+        // Start with the identity matrix
+        glm::mat4 model = glm::mat4(1.0f);
+
+        // Translate each object by an increasing multiple of the offset
+        glm::vec3 translation = translationOffset * static_cast<float>(i);
+        model = glm::translate(model, translation);
+
+        // Update the object's transform
+        m_objectTransforms[i] = model;
+    }
+}
+
+void Application::render() {
+    m_graphics->beginFrame();
+
+    // Adjust camera position for panning
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f) + m_cameraTarget;
+
+    // Calculate view and projection matrices
+    glm::mat4 view = glm::lookAt(cameraPos, m_cameraTarget, m_cameraUp);
+    glm::mat4 projection = glm::perspective(glm::radians(m_fov), 800.0f / 600.0f, 0.1f, 100.0f);
+
+    for (size_t i = 0; i < m_sceneObjects.size(); i++) {
+        glm::mat4 mvp = projection * view * m_objectTransforms[i];
+        m_graphics->draw(*m_sceneObjects[i], mvp, m_objectColors[i]);
+    }
+
+    m_graphics->endFrame();
     glfwSwapBuffers(m_window);
+}
+
+// Helper method implementations
+
+std::string Application::readFile(const std::string& filePath) {
+    std::ifstream file(filePath);
+    if (!file.is_open()) {
+        std::cerr << "Could not open file: " << filePath << std::endl;
+        return {};
+    }
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}
+
+unsigned int Application::createShaderProgram(const std::string& vertexSource, const std::string& fragmentSource) {
+    // 1) Compile vertex shader
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    const char* vsrc = vertexSource.c_str();
+    glShaderSource(vertexShader, 1, &vsrc, nullptr);
+    glCompileShader(vertexShader);
+
+    GLint success;
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        char infoLog[512];
+        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+        std::cerr << "ERROR::VERTEX_SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    // 2) Compile fragment shader
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    const char* fsrc = fragmentSource.c_str();
+    glShaderSource(fragmentShader, 1, &fsrc, nullptr);
+    glCompileShader(fragmentShader);
+
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        char infoLog[512];
+        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
+        std::cerr << "ERROR::FRAGMENT_SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    // 3) Link shaders into a program
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+    glLinkProgram(program);
+
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success) {
+        char infoLog[512];
+        glGetProgramInfoLog(program, 512, nullptr, infoLog);
+        std::cerr << "ERROR::SHADER_PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    }
+
+    // 4) Cleanup shaders (no longer needed once linked)
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return program;
 }
