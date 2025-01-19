@@ -103,6 +103,8 @@ bool Application::init() {
     glfwSwapInterval(1);
 
     m_crosshairShader = loadShader("../shaders/crosshair_vertex.glsl", "../shaders/crosshair_fragment.glsl");
+    m_wireframeShader = loadShader("../shaders/wireframe_fragment.glsl", "../shaders/wireframe_geom.glsl");
+
 
     if (!m_crosshairShader) {
         std::cerr << "Failed to load crosshair shader!" << std::endl;
@@ -210,6 +212,15 @@ void Application::processEvents() {
             addItem();
         }
     }
+
+    if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS) {
+        m_wireframeMode = !m_wireframeMode;
+        if (m_wireframeMode) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        } else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+    }
 }
 
 void Application::addItem() {
@@ -299,6 +310,10 @@ void Application::render() {
         m_graphics->draw(*m_sceneObjects[i], mvp, m_objectColors[i]);
     }
 
+    if (m_customWireframeMode) {
+        renderWireframeObjects();
+    }
+
     renderCrosshair();
 
     m_graphics->endFrame();
@@ -349,6 +364,22 @@ void Application::renderCrosshair() {
 
     glUseProgram(0); // Reset shader state
 }
+
+void Application::renderWireframeObjects() {
+    glUseProgram(m_wireframeShader);
+
+    glm::mat4 view = glm::lookAt(m_cameraPos, m_cameraPos + m_cameraFront, m_cameraUp);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+    for (size_t i = 0; i < m_sceneObjects.size(); i++) {
+        glm::mat4 mvp = projection * view * m_objectTransforms[i];
+        glUniformMatrix4fv(glGetUniformLocation(m_wireframeShader, "uMVP"), 1, GL_FALSE, glm::value_ptr(mvp));
+        m_graphics->draw(*m_sceneObjects[i], m_objectTransforms[i], glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    }
+
+    glUseProgram(0);
+}
+
 
 // Helper method implementations
 

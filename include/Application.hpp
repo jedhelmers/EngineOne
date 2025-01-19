@@ -29,11 +29,16 @@ public:
 
     void renderCrosshair();
 
+    void renderWireframeObjects();
+
 private:
     // Private methods
     void processEvents();
     void update();
     void render();
+
+    bool m_wireframeMode = false;
+    bool m_customWireframeMode = false;
 
     // Window handle
     GLFWwindow* m_window = nullptr;
@@ -56,6 +61,7 @@ private:
     int m_windowHeight = 600;
 
     GLuint m_crosshairShader;
+    GLuint m_wireframeShader;
 
     // Scaling variables for the second cube
     float m_scaleFactor2 = 0.5f;         // Initial scale
@@ -67,7 +73,7 @@ private:
     // Compile & link a shader
     unsigned int createShaderProgram(const std::string& vertexSource, const std::string& fragmentSource);
 
-    glm::vec3 m_cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+    glm::vec3 m_cameraPos = glm::vec3(0.0f, 0.0f, 10.0f);
     glm::vec3 m_cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 m_cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -75,7 +81,7 @@ private:
     float m_cameraPitch = 0.0f; // No vertical angle initially
     float m_sensitivity = 0.1f;
     bool m_firstMouse = true;
-    float m_fov = 150.0f;
+    float m_fov = 300.0f;
     double m_lastX = 400.0; // Assuming a window width of 800
     double m_lastY = 300.0; // Assuming a window height of 600
 
