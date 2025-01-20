@@ -2,14 +2,26 @@
 
 Cube::Cube() {
     float vertices[] = {
-        // Positions       // Normals
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        // Positions         // Colors (R, G, B)
+        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red  (Back face)
+        0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  
+        0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  
+        0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  
+        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  
+        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  
+
+        // Front face (Green)
+        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  
+        0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  
+        0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  
+        0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  
+        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  
+
+        // Other faces (Blue, Yellow, Cyan, Magenta)
+        // Add similar entries for left, right, top, bottom faces
     };
+
 
     m_vertices = {
     // Back face (normals: 0, 0, -1)

@@ -22,69 +22,51 @@ void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
     }
 }
 
-GLuint loadShader(const char* vertexPath, const char* fragmentPath) {
+GLuint loadShader(const char* vertexPath, const char* fragmentPath, const char* geometryPath) {
     std::ifstream vertexFile(vertexPath);
     std::ifstream fragmentFile(fragmentPath);
+    std::ifstream geometryFile(geometryPath);
 
-    if (!vertexFile.is_open() || !fragmentFile.is_open()) {
-        std::cerr << "ERROR: Unable to open shader files: " 
-                  << vertexPath << " or " << fragmentPath << std::endl;
-        return 0;
-    }
-
-    std::stringstream vShaderStream, fShaderStream;
+    std::stringstream vShaderStream, fShaderStream, gShaderStream;
     vShaderStream << vertexFile.rdbuf();
     fShaderStream << fragmentFile.rdbuf();
+    gShaderStream << geometryFile.rdbuf();
 
     std::string vertexCode = vShaderStream.str();
     std::string fragmentCode = fShaderStream.str();
+    std::string geometryCode = gShaderStream.str();
+
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
+    const char* gShaderCode = geometryCode.c_str();
 
-    GLuint vertex, fragment;
+    GLuint vertex, fragment, geometry;
     
     // Compile vertex shader
     vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &vShaderCode, nullptr);
     glCompileShader(vertex);
 
-    GLint success;
-    char infoLog[512];
-    glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertex, 512, nullptr, infoLog);
-        std::cerr << "ERROR: Vertex shader compilation failed\n" << infoLog << std::endl;
-        return 0;
-    }
-
     // Compile fragment shader
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment, 1, &fShaderCode, nullptr);
     glCompileShader(fragment);
 
-    glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragment, 512, nullptr, infoLog);
-        std::cerr << "ERROR: Fragment shader compilation failed\n" << infoLog << std::endl;
-        return 0;
-    }
+    // Compile geometry shader
+    geometry = glCreateShader(GL_GEOMETRY_SHADER);
+    glShaderSource(geometry, 1, &gShaderCode, nullptr);
+    glCompileShader(geometry);
 
-    // Link shaders into a program
     GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertex);
     glAttachShader(shaderProgram, fragment);
+    glAttachShader(shaderProgram, geometry);
     glLinkProgram(shaderProgram);
 
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-        std::cerr << "ERROR: Shader program linking failed\n" << infoLog << std::endl;
-        return 0;
-    }
-
-    // Cleanup shaders (no longer needed once linked)
+    // Cleanup shaders (once linked into program)
     glDeleteShader(vertex);
     glDeleteShader(fragment);
+    glDeleteShader(geometry);
 
     return shaderProgram;
 }
@@ -136,9 +118,14 @@ bool Application::init() {
     // Optional: set swap interval (VSync)
     glfwSwapInterval(1);
 
-    m_crosshairShader = loadShader("../shaders/crosshair_vertex.glsl", "../shaders/crosshair_fragment.glsl");
-    m_wireframeShader = loadShader("../shaders/wireframe_fragment.glsl", "../shaders/wireframe_geom.glsl");
-    m_shaderProgram = loadShader("../shaders/lighting_vertex.glsl", "../shaders/lighting_fragment.glsl");
+    m_crosshairShader = loadShader("../shaders/crosshair_vertex.glsl", "../shaders/crosshair_fragment.glsl", "../shaders/wireframe.geom.glsl");
+    // m_wireframeShader = loadShader("../shaders/wireframe.frag.glsl", "../shaders/wireframe.geom.glsl");
+    // m_shaderProgram = loadShader("../shaders/lighting_vertex.glsl", "../shaders/lighting_fragment.glsl");
+
+    m_wireframeShader = loadShader("../shaders/vertex_shader.glsl", 
+                               "../shaders/fragment_shader.glsl", 
+                               "../shaders/wireframe.geom.glsl");
+
 
     if (!m_crosshairShader) {
         std::cerr << "Failed to load crosshair shader!" << std::endl;
@@ -154,6 +141,7 @@ bool Application::init() {
 
     // 6) Enable some basic GL states
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     // 7) Create scene objects
     {
@@ -334,7 +322,7 @@ void Application::update() {
         float blue  = (sin(angle * 0.5f) + 1.0f) / 2.0f;
 
         // Update the color for the first cube
-        m_objectColors[0] = glm::vec4(red, green, blue, 1.0f); // Alpha is 1.0f
+        // m_objectColors[0] = glm::vec4(red, green, blue, 1.0f); // Alpha is 1.0f
     }
 
     glm::vec3 translationOffset(1.125f, 0.0f, 0.0f); // Adjust spacing as needed
@@ -355,8 +343,38 @@ void Application::update() {
 void Application::render() {
     m_graphics->beginFrame();
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     glm::mat4 view = glm::lookAt(m_cameraPos, m_cameraPos + m_cameraFront, m_cameraUp);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+glUseProgram(m_shaderProgram);
+
+// Set light position
+GLint lightPosLoc = glGetUniformLocation(m_shaderProgram, "lightPos");
+glUniform3f(lightPosLoc, 5.0f, 5.0f, 5.0f);  // Example light position
+
+// Set light color
+GLint lightColorLoc = glGetUniformLocation(m_shaderProgram, "lightColor");
+glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);  // White light
+
+// Set object color
+GLint objectColorLoc = glGetUniformLocation(m_shaderProgram, "objectColor");
+glUniform3f(objectColorLoc, 0.8f, 0.5f, 0.3f);  // Example object color
+
+// Set camera position
+GLint viewPosLoc = glGetUniformLocation(m_shaderProgram, "viewPos");
+glUniform3f(viewPosLoc, m_cameraPos.x, m_cameraPos.y, m_cameraPos.z);
+
+// Pass transformation matrices
+GLint modelLoc = glGetUniformLocation(m_shaderProgram, "uModel");
+glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m_objectTransforms[0]));
+
+GLint viewLoc = glGetUniformLocation(m_shaderProgram, "uView");
+glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+GLint projLoc = glGetUniformLocation(m_shaderProgram, "uProjection");
+glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
     for (size_t i = 0; i < m_sceneObjects.size(); i++) {
         glm::mat4 mvp = projection * view * m_objectTransforms[i];
@@ -369,6 +387,7 @@ void Application::render() {
 
     renderCrosshair();
 
+    glUseProgram(0);
     m_graphics->endFrame();
     glfwSwapBuffers(m_window);
 }
