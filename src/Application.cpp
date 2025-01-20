@@ -17,13 +17,11 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-Application::Application()
-{
+Application::Application() {
     // Nothing special here; we do all setup in init().
 }
 
@@ -88,7 +86,6 @@ void Application::run() {
 }
 
 void Application::processEvents() {
-    glfwSwapBuffers(m_window);
     glfwPollEvents();
 
     if(glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
