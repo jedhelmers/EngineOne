@@ -15,7 +15,7 @@
 // Include your derived shape(s)
 #include "Cube.hpp"
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);  
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -65,9 +65,12 @@ bool Application::init() {
         return -1;
     }
 
+    // Optional: set swap interval (VSync)
+    glfwSwapInterval(1);
+
     glViewport(0, 0, m_windowWidth, m_windowHeight);
 
-    glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);  
+    glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
 
 
     return true;
@@ -86,11 +89,20 @@ void Application::run() {
 
 void Application::processEvents() {
     glfwSwapBuffers(m_window);
-    glfwPollEvents();  
+    glfwPollEvents();
+
+    if(glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(m_window, true);
+    }
+        
 }
 
 void Application::update() {}
 
 void Application::render() {
+    // Render stuff
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     glfwSwapBuffers(m_window);
 }
