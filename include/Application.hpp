@@ -4,7 +4,6 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
-#include "Graphics.hpp"
 #include "Object.hpp"   // or "Cube.hpp" if you want direct access to Cube
 
 // Forward-declare GLFWwindow to avoid pulling in GLFW everywhere
@@ -21,6 +20,8 @@ public:
     // The main loop: keep running until the user closes the window
     void run();
 
+    void addItem();
+
 private:
     // Private methods
     void processEvents();
@@ -29,7 +30,14 @@ private:
 
     GLFWwindow* m_window = nullptr;
 
+    std::vector<std::unique_ptr<Object>> sceneObjects;
+
     // Window dimensions
     int m_windowWidth  = 800;
     int m_windowHeight = 600;
+
+    unsigned int shaderProgram;
+    unsigned int VAO;
+    unsigned int VBO;
+    unsigned int EBO;
 };

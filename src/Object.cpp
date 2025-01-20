@@ -3,8 +3,8 @@
 #include <iostream>
 
 Object::Object()
-    : m_vao(0)
-    , m_vbo(0)
+    : VAO(0)
+    , VBO(0)
 {
     // We don’t generate/buffer anything yet, since derived classes may first fill 'm_vertices'.
 }
@@ -12,68 +12,56 @@ Object::Object()
 Object::~Object()
 {
     // Clean up GPU resources if they were created
-    if (m_vao != 0)
-        glDeleteVertexArrays(1, &m_vao);
-    if (m_vbo != 0)
-        glDeleteBuffers(1, &m_vbo);
+    if (VAO != 0)
+        glDeleteVertexArrays(1, &VAO);
+    if (VBO != 0)
+        glDeleteBuffers(1, &VBO);
 }
 
-void Object::setupBuffer()
-{
-    // 1) Generate a VAO + VBO
-    glGenVertexArrays(1, &m_vao);
-    glGenBuffers(1, &m_vbo);
+void Object::setupBuffer() {
+    // Generate and bind VAO
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
 
-    // 2) Bind them
-    glBindVertexArray(m_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    // Generate and bind VBO
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    // 3) Upload vertex data (positions + normals)
-    glBufferData(GL_ARRAY_BUFFER,
-                 m_vertices.size() * sizeof(float),
-                 m_vertices.data(),
-                 GL_STATIC_DRAW);
+    // Upload vertex data to GPU
+    // Ensure that vertices is not empty to avoid passing a null pointer
+    if (!vertices.empty()) {
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+    } else {
+        // Handle empty vertex data if necessary
+        // For example, you might want to log a warning
+        std::cerr << "Warning: Attempting to upload empty vertex data.\n";
+    }
 
-    // 4) Configure position attribute (layout = 0)
-    glVertexAttribPointer(
-        0,                   // attribute location in the shader
-        3,                   // number of components per vertex (x, y, z)
-        GL_FLOAT,            // data type
-        GL_FALSE,            // not normalized
-        6 * sizeof(float),    // stride (6 floats per vertex)
-        (void*)0              // offset from the start of the VBO data
-    );
+    // Generate and bind EBO
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+    // Upload index data to GPU
+    if (!indices.empty()) {
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+    } else {
+        // Handle empty index data if necessary
+        std::cerr << "Warning: Attempting to upload empty index data.\n";
+    }
+
+    // Define vertex attributes (assuming position only)
+    // Here, we're specifying that the first attribute (location 0) is for position
+    // with 3 floats per vertex (x, y, z), tightly packed
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // 5) Configure normal attribute (layout = 1)
-    glVertexAttribPointer(
-        1,                   // attribute location in the shader
-        3,                   // number of components per vertex (nx, ny, nz)
-        GL_FLOAT,            // data type
-        GL_FALSE,            // not normalized
-        6 * sizeof(float),    // stride (6 floats per vertex)
-        (void*)(3 * sizeof(float)) // offset (skip position)
-    );
-    glEnableVertexAttribArray(1);
+    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
+    glBindBuffer(GL_ARRAY_BUFFER, 0); 
 
-    // 6) Unbind everything
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    // remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+    glBindVertexArray(0); 
 }
-
-void Object::bind() const
-{
-    glBindVertexArray(m_vao);
-}
-
-void Object::unbind() const
-{
-    glBindVertexArray(0);
-}
-
-unsigned int Object::getVertexCount() const
-{
-    // If each vertex consists of 6 floats (position + normal)
-    return static_cast<unsigned int>(m_vertices.size() / 6);
-}
-
