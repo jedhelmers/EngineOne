@@ -40,6 +40,9 @@ private:
     bool m_wireframeMode = false;
     bool m_customWireframeMode = false;
 
+    glm::mat4 viewMatrix;      // View matrix (camera transformation)
+    glm::mat4 projectionMatrix; // Projection matrix (perspective/orthographic)
+
     // Window handle
     GLFWwindow* m_window = nullptr;
 
@@ -62,6 +65,7 @@ private:
 
     GLuint m_crosshairShader;
     GLuint m_wireframeShader;
+    GLuint m_shaderProgram;
 
     // Scaling variables for the second cube
     float m_scaleFactor2 = 0.5f;         // Initial scale

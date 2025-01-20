@@ -9,9 +9,9 @@
 #include <sstream>
 
 // GLM for transforms
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 // Include your derived shape(s)
 #include "Cube.hpp"
 
@@ -26,6 +26,12 @@ GLuint loadShader(const char* vertexPath, const char* fragmentPath) {
     std::ifstream vertexFile(vertexPath);
     std::ifstream fragmentFile(fragmentPath);
 
+    if (!vertexFile.is_open() || !fragmentFile.is_open()) {
+        std::cerr << "ERROR: Unable to open shader files: " 
+                  << vertexPath << " or " << fragmentPath << std::endl;
+        return 0;
+    }
+
     std::stringstream vShaderStream, fShaderStream;
     vShaderStream << vertexFile.rdbuf();
     fShaderStream << fragmentFile.rdbuf();
@@ -36,19 +42,47 @@ GLuint loadShader(const char* vertexPath, const char* fragmentPath) {
     const char* fShaderCode = fragmentCode.c_str();
 
     GLuint vertex, fragment;
+    
+    // Compile vertex shader
     vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &vShaderCode, nullptr);
     glCompileShader(vertex);
 
+    GLint success;
+    char infoLog[512];
+    glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(vertex, 512, nullptr, infoLog);
+        std::cerr << "ERROR: Vertex shader compilation failed\n" << infoLog << std::endl;
+        return 0;
+    }
+
+    // Compile fragment shader
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment, 1, &fShaderCode, nullptr);
     glCompileShader(fragment);
 
+    glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(fragment, 512, nullptr, infoLog);
+        std::cerr << "ERROR: Fragment shader compilation failed\n" << infoLog << std::endl;
+        return 0;
+    }
+
+    // Link shaders into a program
     GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertex);
     glAttachShader(shaderProgram, fragment);
     glLinkProgram(shaderProgram);
 
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
+        std::cerr << "ERROR: Shader program linking failed\n" << infoLog << std::endl;
+        return 0;
+    }
+
+    // Cleanup shaders (no longer needed once linked)
     glDeleteShader(vertex);
     glDeleteShader(fragment);
 
@@ -104,7 +138,7 @@ bool Application::init() {
 
     m_crosshairShader = loadShader("../shaders/crosshair_vertex.glsl", "../shaders/crosshair_fragment.glsl");
     m_wireframeShader = loadShader("../shaders/wireframe_fragment.glsl", "../shaders/wireframe_geom.glsl");
-
+    m_shaderProgram = loadShader("../shaders/lighting_vertex.glsl", "../shaders/lighting_fragment.glsl");
 
     if (!m_crosshairShader) {
         std::cerr << "Failed to load crosshair shader!" << std::endl;
@@ -128,6 +162,19 @@ bool Application::init() {
 
     glfwSetWindowUserPointer(m_window, this);
     glfwSetScrollCallback(m_window, scrollCallback);
+
+    viewMatrix = glm::lookAt(
+        m_cameraPos,                  // Camera position
+        m_cameraPos + m_cameraFront,   // Target (looking forward)
+        m_cameraUp                     // Up vector
+    );
+
+    projectionMatrix = glm::perspective(
+        glm::radians(m_fov),
+        static_cast<float>(m_windowWidth) / static_cast<float>(m_windowHeight),
+        0.1f, 100.0f
+    );
+
 
     return true;
 }
@@ -213,14 +260,20 @@ void Application::processEvents() {
         }
     }
 
-    if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS) {
+    static bool wKeyPressed = false;
+    if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS && !wKeyPressed) {
         m_wireframeMode = !m_wireframeMode;
+        wKeyPressed = true;
         if (m_wireframeMode) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         } else {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
+    } 
+    if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_RELEASE) {
+        wKeyPressed = false;
     }
+
 }
 
 void Application::addItem() {
@@ -330,11 +383,14 @@ void Application::renderCrosshair() {
     if (VAO == 0) {
         float crosshairVertices[] = {
             // Horizontal line (centered)
-            -0.02f,  0.0f, 
-             0.02f,  0.0f, 
-             0.0f,  -0.02f, 
-             0.0f,   0.02f  
+            -0.02f,  0.0f,  0.0f,
+            0.02f,  0.0f,  0.0f,
+
+            // Vertical line (centered)
+            0.0f,  -0.02f, 0.0f,
+            0.0f,   0.02f, 0.0f
         };
+
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
@@ -343,8 +399,12 @@ void Application::renderCrosshair() {
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(crosshairVertices), crosshairVertices, GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
@@ -379,7 +439,6 @@ void Application::renderWireframeObjects() {
 
     glUseProgram(0);
 }
-
 
 // Helper method implementations
 
