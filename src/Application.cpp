@@ -66,8 +66,10 @@ bool Application::init() {
     // Optional: set swap interval (VSync)
     glfwSwapInterval(1);
 
+    // Set viewport
     glViewport(0, 0, m_windowWidth, m_windowHeight);
 
+    // Not sure
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
 
 
