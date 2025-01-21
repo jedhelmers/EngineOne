@@ -4,7 +4,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
-#include "Object.hpp"   // or "Cube.hpp" if you want direct access to Cube
+#include "Shader.hpp"
+#include "Object.hpp"
 
 // Forward-declare GLFWwindow to avoid pulling in GLFW everywhere
 struct GLFWwindow;
@@ -40,4 +41,6 @@ private:
     unsigned int VAO;
     unsigned int VBO;
     unsigned int EBO;
+
+    std::vector<Shader> shaders;
 };

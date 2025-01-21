@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+
 
 class Shader {
     public:
@@ -8,7 +10,7 @@ class Shader {
         ~Shader();
 
         void Use();
-        void Init(const char*, const char*);
+        void SetValue(const std::string&, glm::vec3 value);
 
     private:
         unsigned int vertexShader;

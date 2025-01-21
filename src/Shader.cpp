@@ -60,6 +60,10 @@ Shader::~Shader() {
     glDeleteProgram(programID);
 }
 
+void Shader::SetValue(const std::string& name, glm::vec3 value) {
+    glUniform3f(glGetUniformLocation(programID, name.c_str()), value.x, value.y, value.z);
+}
+
 void Shader::Use() {
     glUseProgram(programID);
 }

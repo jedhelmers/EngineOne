@@ -65,8 +65,12 @@ bool Application::init() {
         return -1;
     }
 
+    // Shader shader("../shaders/fragment.glsl", "../shaders/vertex.glsl");
     Shader shader("../shaders/fragment.glsl", "../shaders/vertex.glsl");
-    shader.Use();
+
+    shaders.push_back(shader);
+    shaders[0].Use();
+    shaders[0].SetValue("inColor", glm::vec3(0.5f, 0.5f, 0.2f));
     addItem();
 
     // Optional: set swap interval (VSync)
@@ -120,9 +124,16 @@ void Application::addItem() {
     // CRAP
 }
 
+static float test = 1.0f;
+
 void Application::run() {
     // Main loop
     while (!glfwWindowShouldClose(m_window)) {
+        if (test > 1.0f) {
+            test = 0.0f;
+        } else {
+            test += 0.01f;
+        }
         processEvents();
         update();
         render();
@@ -147,9 +158,9 @@ void Application::render() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-
     // draw our first triangle
-    glUseProgram(shaderProgram);
+    // glUseProgram(shaderProgram);
+    shaders[0].Use();
     glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
     //glDrawArrays(GL_TRIANGLES, 0, 6);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
