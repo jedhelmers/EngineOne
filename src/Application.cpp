@@ -33,7 +33,7 @@ const char *fragmentShaderSource = "#version 330 core\n"
     "{\n"
     "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
     "}\n\0";
-    
+
 Application::Application() {
     // Nothing special here; we do all setup in init().
 }
@@ -77,6 +77,18 @@ bool Application::init() {
         return -1;
     }
 
+    addItem();
+
+    // Optional: set swap interval (VSync)
+    glfwSwapInterval(1);
+
+
+    return true;
+}
+
+void Application::addItem() {
+    // auto testObject = std::make_unique<TestObject>();
+    // sceneObjects.push_back(std::move(testObject));
 
     // CRAP
     // build and compile our shader program
@@ -125,13 +137,13 @@ bool Application::init() {
          0.5f,  0.5f, 0.0f,  // top right
          0.5f, -0.5f, 0.0f,  // bottom right
         -0.5f, -0.5f, 0.0f,  // bottom left
-        -0.5f,  0.5f, 0.0f   // top left 
+        -0.5f,  0.5f, 0.0f   // top left
     };
     unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,  // first Triangle
         1, 2, 3   // second Triangle
     };
-    
+
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -148,27 +160,15 @@ bool Application::init() {
     glEnableVertexAttribArray(0);
 
     // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    glBindVertexArray(0); 
-// CRAP
-
-
-    // Optional: set swap interval (VSync)
-    // glfwSwapInterval(1);
-
-
-    return true;
-}
-
-void Application::addItem() {
-    // auto testObject = std::make_unique<TestObject>();
-    // sceneObjects.push_back(std::move(testObject));
+    glBindVertexArray(0);
+    // CRAP
 }
 
 void Application::run() {
@@ -188,7 +188,7 @@ void Application::processEvents() {
     if(glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(m_window, true);
     }
-        
+
 }
 
 void Application::update() {}
