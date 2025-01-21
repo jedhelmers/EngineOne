@@ -1,11 +1,18 @@
-#ifndef SHADER_H
-#define SHADER_H
-
+#pragma once
 #include <string>
 #include <glad/glad.h>
 
-std::string readFile(const std::string& filePath);
-GLuint compileShader(GLenum type, const std::string& source);
-GLuint createShaderProgram(const std::string& vertexSource, const std::string& fragmentSource);
+class Shader {
+    public:
+        Shader(const std::string&, const std::string&);
+        ~Shader();
 
-#endif // SHADER_H
+        void Use();
+
+    private:
+        unsigned int vertexShader;
+        unsigned int fragmentShader;
+        unsigned int shaderProgram;
+
+        uint32_t programID;
+};
