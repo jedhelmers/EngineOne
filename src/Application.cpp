@@ -129,11 +129,6 @@ static float test = 1.0f;
 void Application::run() {
     // Main loop
     while (!glfwWindowShouldClose(m_window)) {
-        if (test > 1.0f) {
-            test = 0.0f;
-        } else {
-            test += 0.01f;
-        }
         processEvents();
         update();
         render();
@@ -151,7 +146,13 @@ void Application::processEvents() {
 
 }
 
-void Application::update() {}
+void Application::update() {
+    float timeValue = glfwGetTime();
+    float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+    float redValue = (sin(timeValue) / 2.0f) + 0.125f;
+    float blueValue = (sin(timeValue) / 2.0f) + 0.35f;
+    shaders[0].SetValue("inColor", glm::vec3(redValue, greenValue, blueValue));
+}
 
 void Application::render() {
     // Render stuff
