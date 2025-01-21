@@ -60,9 +60,18 @@ Shader::~Shader() {
     glDeleteProgram(programID);
 }
 
-void Shader::SetValue(const std::string& name, glm::vec3 value) {
-    glUniform3f(glGetUniformLocation(programID, name.c_str()), value.x, value.y, value.z);
+void Shader::setBool(const std::string &name, bool value) const
+{         
+    glUniform1i(glGetUniformLocation(programID, name.c_str()), (int)value); 
 }
+void Shader::setInt(const std::string &name, int value) const
+{ 
+    glUniform1i(glGetUniformLocation(programID, name.c_str()), value); 
+}
+void Shader::setFloat(const std::string &name, float value) const
+{ 
+    glUniform1f(glGetUniformLocation(programID, name.c_str()), value); 
+} 
 
 void Shader::Use() {
     glUseProgram(programID);
