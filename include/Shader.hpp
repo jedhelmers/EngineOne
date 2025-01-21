@@ -4,10 +4,11 @@
 
 class Shader {
     public:
-        Shader(const std::string&, const std::string&);
+        Shader(const char*, const char*);
         ~Shader();
 
         void Use();
+        void Init(const char*, const char*);
 
     private:
         unsigned int vertexShader;

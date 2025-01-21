@@ -1,16 +1,25 @@
 #include "Shader.hpp"
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 
-Shader::Shader(const std::string& vertextCode, const std::string& fragmentCode) {
-    const char* vertextShaderCode = vertextCode.c_str();
-    const char* fragmentShaderCode = fragmentCode.c_str();
-    
-    // build and compile our shader program
-    // ------------------------------------
-    // vertex shader
+
+Shader::Shader(const char* fShaderPath, const char* vShaderPath) {
+    std::ifstream fragmentFile(fShaderPath);
+    std::stringstream fShaderStream;
+    fShaderStream << fragmentFile.rdbuf();
+    std::string fragmentCode = fShaderStream.str();
+    const char* fShaderCode = fragmentCode.c_str();
+
+    std::ifstream vertexFile(vShaderPath);
+    std::stringstream vShaderStream;
+    vShaderStream << vertexFile.rdbuf();
+    std::string vertexCode = vShaderStream.str();
+    const char* vShaderCode = vertexCode.c_str();
+
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertextShaderCode, NULL);
+    glShaderSource(vertexShader, 1, &vShaderCode, NULL);
     glCompileShader(vertexShader);
     // check for shader compile errors
     int success;
@@ -23,7 +32,7 @@ Shader::Shader(const std::string& vertextCode, const std::string& fragmentCode) 
     }
     // fragment shader
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderCode, NULL);
+    glShaderSource(fragmentShader, 1, &fShaderCode, NULL);
     glCompileShader(fragmentShader);
     // check for shader compile errors
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
@@ -45,7 +54,6 @@ Shader::Shader(const std::string& vertextCode, const std::string& fragmentCode) 
     }
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-
 }
 
 Shader::~Shader() {
