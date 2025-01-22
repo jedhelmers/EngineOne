@@ -19,6 +19,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(thirdparty/glfw)  # This should create the 'glfw' library target
 add_subdirectory(thirdparty/glad)  # This should create the 'glad' library target
 add_subdirectory(thirdparty/glm)
+add_subdirectory(thirdparty/stb_image)
 
 # If you have more libs, just repeat:
 # add_subdirectory(thirdparty/glm)
@@ -57,6 +58,7 @@ target_link_libraries(${PROJECT_NAME}
         glfw      # Provided by add_subdirectory(thirdparty/glfw)
         glad      # Provided by add_subdirectory(thirdparty/glad)
         glm
+        stb_image
 )
 
 if(APPLE)

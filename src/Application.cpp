@@ -13,6 +13,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Shader.hpp"
+#include "Texture.hpp"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -67,6 +68,8 @@ bool Application::init() {
     shaders.push_back(shader);
     shaders[0].Use();
 
+    Texture texture("../include/wall.jpg");
+    texture.Use();
     addItem();
 
     // Optional: set swap interval (VSync)
