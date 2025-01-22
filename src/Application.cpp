@@ -68,7 +68,7 @@ bool Application::init() {
     shaders.push_back(shader);
     shaders[0].Use();
 
-    Texture texture("../include/wall.jpg");
+    Texture texture("../textures/wall.jpg");
     texture.Use();
     addItem();
 
