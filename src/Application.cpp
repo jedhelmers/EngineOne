@@ -67,13 +67,19 @@ bool Application::init() {
     Shader shader("../shaders/fragment.glsl", "../shaders/vertex.glsl");
     shaders.push_back(shader);
     shaders[0].Use();
+    shaders[0].setInt("ourTexture", 0);
 
+    // Example (replace with your actual absolute path)
     Texture texture("../textures/wall.jpg");
-    texture.Use();
+    textures.push_back(texture);
+    textures[0].Use();
     addItem();
 
     // Optional: set swap interval (VSync)
     glfwSwapInterval(1);
+
+    std::cout << "OpenGL Renderer: " << glGetString(GL_RENDERER) << std::endl;
+    std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
     return true;
 }
@@ -82,11 +88,12 @@ void Application::addItem() {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-        // positions         // colors
-        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
-    }; 
+        // positions         // colors          // texture coords
+        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   0.0f, 0.0f, // bottom left
+        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,   0.5f, 1.0f  // top 
+    };
+
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -98,11 +105,15 @@ void Application::addItem() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    // Texture coord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
 }
@@ -130,14 +141,26 @@ void Application::processEvents() {
 void Application::update() {}
 
 void Application::render() {
-    // Render stuff
+    // Clear the screen
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // draw our first triangle
+    // Use shader program
     shaders[0].Use();
+
+    // Activate texture unit 0 and bind the texture
+    glActiveTexture(GL_TEXTURE0);
+    textures[0].Use();
+
+    // Bind VAO and draw the triangle
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
+    // Unbind VAO for cleanliness
+    glBindVertexArray(0);
+
+    // Swap buffers
     glfwSwapBuffers(m_window);
 }
+
+

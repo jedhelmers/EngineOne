@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 #include "Shader.hpp"
+#include "Texture.hpp"
 #include "Object.hpp"
 
 // Forward-declare GLFWwindow to avoid pulling in GLFW everywhere
@@ -43,4 +44,5 @@ private:
     unsigned int EBO;
 
     std::vector<Shader> shaders;
+    std::vector<Texture> textures;
 };
