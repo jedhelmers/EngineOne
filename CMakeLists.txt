@@ -55,8 +55,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 # -----------------------------
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        glfw      # Provided by add_subdirectory(thirdparty/glfw)
-        glad      # Provided by add_subdirectory(thirdparty/glad)
+        glfw
+        glad
         glm
         stb_image
 )
@@ -69,3 +69,25 @@ if(APPLE)
         message(FATAL_ERROR "Could not find the macOS OpenGL framework.")
     endif()
 endif()
+
+# Copy textures to the build directory
+set(TEXTURES_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/textures")
+set(TEXTURES_DEST_DIR "${CMAKE_CURRENT_BINARY_DIR}/textures")
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${TEXTURES_SOURCE_DIR}"
+        "${TEXTURES_DEST_DIR}"
+    COMMENT "Copying textures to the build directory..."
+)
+
+# Copy shaders to the build directory
+set(SHADERS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
+set(SHADERS_DEST_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders")
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${SHADERS_SOURCE_DIR}"
+        "${SHADERS_DEST_DIR}"
+    COMMENT "Copying shaders to the build directory..."
+)

@@ -64,15 +64,6 @@ bool Application::init() {
         return -1;
     }
 
-    Shader shader("../shaders/fragment.glsl", "../shaders/vertex.glsl");
-    shaders.push_back(shader);
-    shaders[0].Use();
-    shaders[0].setInt("ourTexture", 0);
-
-    // Example (replace with your actual absolute path)
-    Texture texture("../textures/wall.jpg");
-    textures.push_back(texture);
-    textures[0].Use();
     addItem();
 
     // Optional: set swap interval (VSync)
@@ -98,6 +89,16 @@ void Application::addItem() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
+
+    Shader shader("shaders/fragment.glsl", "shaders/vertex.glsl");
+    shaders.push_back(shader);
+    shaders[0].Use();
+    shaders[0].setInt("textureAtlas", 0);
+
+    // Example (replace with your actual absolute path)
+    Texture texture("textures/wall.jpg");
+    textures.push_back(texture);
+    textures[0].Use();
 
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);

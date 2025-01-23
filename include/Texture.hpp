@@ -11,4 +11,6 @@ class Texture
 
     private:
         unsigned int texture;
+        unsigned int textureID;
+        GLuint programID;
 };
