@@ -1,16 +1,32 @@
-#pragma once
+#ifndef TEXTURE_HPP
+#define TEXTURE_HPP
 
-class Texture
-{
-    public:
-        Texture(const char* path);
-        ~Texture();
+#include <glad/glad.h>
 
-        void Use();
-        unsigned int getID();
+class Texture {
+public:
+    // Constructor
+    Texture(const char* path);
 
-    private:
-        unsigned int texture;
-        unsigned int textureID;
-        GLuint programID;
+    // Destructor
+    ~Texture();
+
+    // Use the texture
+    void Use() const;
+
+    // Get the texture ID
+    unsigned int getID() const;
+
+    // Delete copy constructor and copy assignment to prevent accidental copies
+    Texture(const Texture&) = delete;
+    Texture& operator=(const Texture&) = delete;
+
+    // Implement move constructor and move assignment if needed
+    Texture(Texture&& other) noexcept;
+    Texture& operator=(Texture&& other) noexcept;
+
+private:
+    unsigned int textureID = 0; // Member variable with default initialization
 };
+
+#endif

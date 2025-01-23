@@ -94,13 +94,15 @@ void Application::addItem() {
     shaders.push_back(shader);
 
     // Example (replace with your actual absolute path)
-    Texture texture("textures/wall.jpg");
-    textures.push_back(texture);
+    textures.push_back(Texture("textures/wall.jpg"));
     textures[0].Use();
+
+    // textures.push_back(Texture("textures/Cat03.jpg"));
+    // textures[1].Use();
 
     shaders[0].Use();
     shaders[0].setInt("textureAtlas", 0);
-    
+
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
