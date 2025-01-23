@@ -5,6 +5,7 @@
 #include "Texture.hpp"
 
 Texture::Texture(const char* path) {
+    unsigned int texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     // set the texture wrapping/filtering options (on the currently bound texture object)
