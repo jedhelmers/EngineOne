@@ -90,18 +90,27 @@ void Application::addItem() {
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
-    Shader shader("shaders/fragment.glsl", "shaders/vertex.glsl");
+    Shader shader("../shaders/fragment.glsl", "../shaders/vertex.glsl");
     shaders.push_back(shader);
 
     // Example (replace with your actual absolute path)
     textures.push_back(Texture("textures/wall.jpg"));
-    textures[0].Use();
+    // textures[0].Use();
 
-    // textures.push_back(Texture("textures/Cat03.jpg"));
+    textures.push_back(Texture("textures/balls.jpg"));
     // textures[1].Use();
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textures[0].getID());
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textures[1].getID());
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
+
     shaders[0].Use();
-    shaders[0].setInt("textureAtlas", 0);
+    shaders[0].setInt("ourTexture", 0);
+    shaders[0].setInt("ourTexture2", 0);
 
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
@@ -150,11 +159,24 @@ void Application::render() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Use shader program
+    // shaders[0].Use();
+
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textures[0].getID());
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textures[1].getID());
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
+
     shaders[0].Use();
+    shaders[0].setInt("ourTexture", 0);
+    shaders[0].setInt("ourTexture2", 1);
 
     // Activate texture unit 0 and bind the texture
-    glActiveTexture(GL_TEXTURE0);
-    textures[0].Use();
+    // glActiveTexture(GL_TEXTURE0);
+    // textures[0].Use();
 
     // Bind VAO and draw the triangle
     glBindVertexArray(VAO);
