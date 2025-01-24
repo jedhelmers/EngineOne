@@ -116,6 +116,7 @@ void Application::addItem() {
     shaders[0].setInt("ourTexture1", 1);
     shaders[0].setInt("ourTexture2", 2);
     shaders[0].setInt("ourTexture3", 3);
+    // shaders[0].setInt("transform", 0.92);
 
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
@@ -125,6 +126,7 @@ void Application::addItem() {
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
     // color attribute
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
@@ -156,7 +158,13 @@ void Application::processEvents() {
 
 }
 
-void Application::update() {}
+void Application::update() {
+    glm::mat4 trans = glm::mat4(1.0f);
+    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    shaders[0].setMat4("transform", trans);
+}
 
 void Application::render() {
     // Clear the screen
