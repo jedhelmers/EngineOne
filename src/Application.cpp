@@ -95,22 +95,27 @@ void Application::addItem() {
 
     // Example (replace with your actual absolute path)
     textures.push_back(Texture("textures/wall.jpg"));
-    // textures[0].Use();
-
     textures.push_back(Texture("textures/balls.jpg"));
-    // textures[1].Use();
+    textures.push_back(Texture("textures/Cat03.jpg"));
+    textures.push_back(Texture("textures/rambo.png"));
+    textures[0].Use();
+    textures[1].Use();
+    textures[2].Use();
+    textures[3].Use();
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textures[0].getID());
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, textures[1].getID());
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, textures[0].getID());
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, textures[1].getID());
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
 
     shaders[0].Use();
     shaders[0].setInt("ourTexture", 0);
-    shaders[0].setInt("ourTexture2", 0);
+    shaders[0].setInt("ourTexture1", 1);
+    shaders[0].setInt("ourTexture2", 2);
+    shaders[0].setInt("ourTexture3", 3);
 
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
@@ -162,17 +167,29 @@ void Application::render() {
     // shaders[0].Use();
 
 
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, textures[0].getID());
+    // glActiveTexture(GL_TEXTURE1);
+    // glBindTexture(GL_TEXTURE_2D, textures[1].getID());
+    // glActiveTexture(GL_TEXTURE2);
+    // glBindTexture(GL_TEXTURE_2D, textures[2].getID());
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textures[0].getID());
+    textures[0].Use();
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, textures[1].getID());
+    textures[1].Use();
+    glActiveTexture(GL_TEXTURE2);
+    textures[2].Use();
+    glActiveTexture(GL_TEXTURE3);
+    textures[3].Use();
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
 
     shaders[0].Use();
     shaders[0].setInt("ourTexture", 0);
-    shaders[0].setInt("ourTexture2", 1);
+    shaders[0].setInt("ourTexture1", 1);
+    shaders[0].setInt("ourTexture2", 2);
+    shaders[0].setInt("ourTexture3", 3);
 
     // Activate texture unit 0 and bind the texture
     // glActiveTexture(GL_TEXTURE0);
