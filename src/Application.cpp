@@ -161,7 +161,7 @@ void Application::processEvents() {
 void Application::update() {
     glm::mat4 trans = glm::mat4(1.0f);
     trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.05f, 0.05f, 1.0f));
 
     shaders[0].setMat4("transform", trans);
 }
