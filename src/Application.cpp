@@ -15,6 +15,9 @@
 #include "Shader.hpp"
 #include "Texture.hpp"
 
+// Utils
+#include "utils/logger.h"
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -35,7 +38,8 @@ Application::~Application() {
 
 bool Application::init() {
     if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW\n";
+        // std::cerr << "Failed to initialize GLFW\n";
+        LOG(ERROR, (char*)"Failed to initialize GLFW");
         return false;
     }
 
@@ -53,7 +57,8 @@ bool Application::init() {
     m_window = glfwCreateWindow(m_windowWidth, m_windowHeight, "EngineOne", nullptr, nullptr);
 
     if (!m_window) {
-        std::cout << "Failed to create GLFW window" << std::endl;
+        // std::cout << "Failed to create GLFW window" << std::endl;
+        LOG(ERROR, (char*)"Failed to create GLFW window");
         glfwTerminate();
         return false;
     }
@@ -62,7 +67,8 @@ bool Application::init() {
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        // std::cout << "Failed to initialize GLAD" << std::endl;
+        LOG(ERROR, (char*)"Failed to initialize GLAD");
         return -1;
     }
 
@@ -75,8 +81,10 @@ bool Application::init() {
     // Optional: set swap interval (VSync)
     glfwSwapInterval(1);
 
-    std::cout << "OpenGL Renderer: " << glGetString(GL_RENDERER) << std::endl;
-    std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+    
+    LOG(INFO, (std::string("OpenGL Renderer: ") + reinterpret_cast<const char*>(glGetString(GL_RENDERER))).c_str());
+    LOG(INFO, (std::string("OpenGL Version: ") + reinterpret_cast<const char*>(glGetString(GL_VERSION))).c_str());
+
 
     return true;
 }
