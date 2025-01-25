@@ -1,12 +1,17 @@
 #version 330 core
+layout (location = 0) in vec3 aPos;       // Position attribute
+layout (location = 1) in vec3 aColor;     // Color attribute
+layout (location = 2) in vec2 aTexCoord;  // Texture coordinate attribute
 
-layout (location = 0) in vec3 aPos;
+out vec3 ourColor;
+out vec2 TexCoord;
 
-// Typically you'd have a uniform mat4 model, view, projection, 
-// but let's do a single MVP matrix for simplicity.
-uniform mat4 uMVP;
+uniform mat4 transform;
+uniform mat4 projection;
 
 void main()
 {
-    gl_Position = uMVP * vec4(aPos, 1.0);
+    gl_Position = projection * transform * vec4(aPos, 1.0f);
+    ourColor = aColor;
+    TexCoord = aTexCoord;
 }
