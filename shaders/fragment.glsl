@@ -1,7 +1,7 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec3 ourColor;
+// in vec3 ourColor;
 in vec2 TexCoord;
 
 uniform sampler2D ourTexture;
@@ -21,5 +21,6 @@ void main()
 
     // Mix the two textures with equal weighting
     // FragColor = mix(color1, color2, 0.5) * vec4(ourColor, 1.0);
-    FragColor = mix1 * vec4(ourColor, 1.0);
+    // FragColor = mix1 * vec4(ourColor, 1.0);
+    FragColor = mix1;
 }
