@@ -66,7 +66,7 @@ bool Application::init() {
         return -1;
     }
 
-    // glEnable(GL_DEPTH_TEST);  
+    glEnable(GL_DEPTH_TEST);  
 
 
 
@@ -94,26 +94,20 @@ void Application::addItem() {
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    // glGenBuffers(1, &EBO);
+    glGenBuffers(1, &EBO);
 
-    Shader shader("../shaders/fragment.glsl", "../shaders/vertex.glsl");
-    shaders.push_back(shader);
-
-    // Example (replace with your actual absolute path)
+    // Texture setup
     textures.push_back(Texture("textures/wall.jpg"));
     textures.push_back(Texture("textures/balls.jpg"));
     textures.push_back(Texture("textures/Cat03.jpg"));
     textures.push_back(Texture("textures/rambo.png"));
-    textures[0].Use();
-    textures[1].Use();
-    textures[2].Use();
-    textures[3].Use();
 
+    // Shader setup
+    Shader shader("../shaders/fragment.glsl", "../shaders/vertex.glsl");
+    shaders.push_back(shader);
+
+    // Not sure why i have to call Use here
     shaders[0].Use();
-    shaders[0].setInt("ourTexture", 0);
-    shaders[0].setInt("ourTexture1", 1);
-    shaders[0].setInt("ourTexture2", 2);
-    shaders[0].setInt("ourTexture3", 3);
 
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
@@ -176,18 +170,13 @@ void Application::update() {
 
 void Application::render() {
     // Clear the screen
-    glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
-    glActiveTexture(GL_TEXTURE0);
-    textures[0].Use();
-    glActiveTexture(GL_TEXTURE1);
-    textures[1].Use();
-    glActiveTexture(GL_TEXTURE2);
-    textures[2].Use();
-    glActiveTexture(GL_TEXTURE3);
-    textures[3].Use();
+    textures[0].Use(0);
+    textures[1].Use(1);
+    textures[2].Use(2);
+    textures[3].Use(3);
 
     shaders[0].Use();
     shaders[0].setInt("ourTexture", 0);

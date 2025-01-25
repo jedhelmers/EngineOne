@@ -12,7 +12,7 @@ public:
     ~Texture();
 
     // Use the texture
-    void Use() const;
+    void Use(const unsigned int) const;
 
     // Get the texture ID
     unsigned int getID() const;
