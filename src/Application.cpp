@@ -43,6 +43,8 @@ bool Application::init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_DEPTH_BITS, 24);
+
 
     #ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -64,6 +66,10 @@ bool Application::init() {
         return -1;
     }
 
+    // glEnable(GL_DEPTH_TEST);  
+
+
+
     addItem();
 
     // Optional: set swap interval (VSync)
@@ -79,16 +85,16 @@ void Application::addItem() {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-        // positions         // colors          // texture coords
-        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   0.0f, 0.0f, // bottom left
-        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,   0.5f, 1.0f  // top 
+        // positions            // colors           // texture coords
+        0.5f, -0.5f, 0.0f,      1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,   0.0f, 0.0f, // bottom left
+        0.0f,  0.5f, 0.0f,      0.0f, 0.0f, 1.0f,   0.5f, 1.0f  // top 
     };
 
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    // glGenBuffers(1, &EBO);
 
     Shader shader("../shaders/fragment.glsl", "../shaders/vertex.glsl");
     shaders.push_back(shader);
@@ -103,20 +109,11 @@ void Application::addItem() {
     textures[2].Use();
     textures[3].Use();
 
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, textures[0].getID());
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, textures[1].getID());
-
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
-
     shaders[0].Use();
     shaders[0].setInt("ourTexture", 0);
     shaders[0].setInt("ourTexture1", 1);
     shaders[0].setInt("ourTexture2", 2);
     shaders[0].setInt("ourTexture3", 3);
-    // shaders[0].setInt("transform", 0.92);
 
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
@@ -160,27 +157,29 @@ void Application::processEvents() {
 
 void Application::update() {
     glm::mat4 trans = glm::mat4(1.0f);
-    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.05f, 0.05f, 1.0f));
+    // trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+    // trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.05f, 0.05f, 1.0f));
 
-    shaders[0].setMat4("transform", trans);
+    glm::mat4 model = glm::mat4(1.0f);
+    // model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.1f, 0.1f, 0.1f)); 
+
+    glm::mat4 view = glm::mat4(1.0f);
+    // note that we're translating the scene in the reverse direction of where we want to move
+    view = glm::translate(model, glm::vec3(0.0f, 0.0f, -2.50f)); 
+
+    glm::mat4 projection;
+    projection = glm::perspective((float)glfwGetTime(), 800.0f / 600.0f, 0.1f, 100.0f);
+
+    shaders[0].setMat4("transform", view);
+    shaders[0].setMat4("projection", projection);
 }
 
 void Application::render() {
     // Clear the screen
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
 
-    // Use shader program
-    // shaders[0].Use();
-
-
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, textures[0].getID());
-    // glActiveTexture(GL_TEXTURE1);
-    // glBindTexture(GL_TEXTURE_2D, textures[1].getID());
-    // glActiveTexture(GL_TEXTURE2);
-    // glBindTexture(GL_TEXTURE_2D, textures[2].getID());
     glActiveTexture(GL_TEXTURE0);
     textures[0].Use();
     glActiveTexture(GL_TEXTURE1);
@@ -190,18 +189,11 @@ void Application::render() {
     glActiveTexture(GL_TEXTURE3);
     textures[3].Use();
 
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
-
     shaders[0].Use();
     shaders[0].setInt("ourTexture", 0);
     shaders[0].setInt("ourTexture1", 1);
     shaders[0].setInt("ourTexture2", 2);
     shaders[0].setInt("ourTexture3", 3);
-
-    // Activate texture unit 0 and bind the texture
-    // glActiveTexture(GL_TEXTURE0);
-    // textures[0].Use();
 
     // Bind VAO and draw the triangle
     glBindVertexArray(VAO);
