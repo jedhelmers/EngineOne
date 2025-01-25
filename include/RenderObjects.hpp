@@ -9,21 +9,22 @@
 class RenderObjects {
 public:
     // Virtual destructor in case of inheritance
-    virtual ~RenderObjects() = default;
+    RenderObjects() = default;
+    ~RenderObjects() = default;
 
     // Pure virtual function for rendering (implementation in .cpp or derived class)
-    virtual void render() = 0;
+    void render();
 
     // Add a new object; returns the index of the new object
     // (Implementation can be in .cpp, or inline here if you prefer)
-    virtual size_t addObject(
+    void addObject(
         std::vector<float>,
         std::unique_ptr<Shader> shader,
         const std::vector<Texture>& tex,
         const glm::vec3& pos,
         const glm::vec3& rot,
         const glm::vec3& scl
-    ) = 0;
+    );
 
 protected:
     // Parallel arrays:
