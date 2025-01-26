@@ -20,7 +20,7 @@ public:
     void addObject(
         std::vector<float>,
         std::unique_ptr<Shader> shader,
-        const std::vector<Texture>& tex,
+        std::vector<Texture> tex,
         const glm::vec3& pos,
         const glm::vec3& rot,
         const glm::vec3& scl
@@ -46,5 +46,10 @@ protected:
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> rotations;
     std::vector<glm::vec3> scales;
+
+    // OpenGL Handles
+    std::vector<GLuint> vaos;
+    std::vector<GLuint> vbos;
+    std::vector<GLuint> ebos;
 };
 

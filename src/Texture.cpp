@@ -48,6 +48,7 @@ Texture::~Texture() {
 
 // Use the texture
 void Texture::Use(const unsigned int i) const {
+    // Bind the texture
     glActiveTexture(GL_TEXTURE0 + i);
     glBindTexture(GL_TEXTURE_2D, textureID);
 }

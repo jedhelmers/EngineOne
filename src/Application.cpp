@@ -80,6 +80,7 @@ bool Application::init() {
 
 
     addItem();
+    addItem();
 
     // Optional: set swap interval (VSync)
     glfwSwapInterval(1);
@@ -144,11 +145,19 @@ void Application::addItem() {
     glGenBuffers(1, &VBO);
     // glGenBuffers(1, &EBO);
 
+    std::vector<Texture*> _textures;
     // Texture setup
-    textures.push_back(Texture("textures/wall.jpg"));
-    textures.push_back(Texture("textures/balls.jpg"));
-    textures.push_back(Texture("textures/Cat03.jpg"));
-    textures.push_back(Texture("textures/rambo.png"));
+    // _textures.push_back(Texture("textures/wall.jpg"));
+    // _textures.push_back(Texture("textures/balls.jpg"));
+    // _textures.push_back(Texture("textures/Cat03.jpg"));
+    // _textures.push_back(Texture("textures/rambo.png"));
+
+    textures.push_back(std::vector<Texture*>{
+        new Texture("textures/wall.jpg"),
+        new Texture("textures/balls.jpg"),
+        new Texture("textures/Cat03.jpg"),
+        new Texture("textures/rambo.png")
+    });
 
     // Shader setup
     Shader shader("../shaders/fragment.glsl", "../shaders/vertex.glsl");
@@ -198,7 +207,7 @@ void Application::update() {
     glm::mat4 view          = glm::mat4(1.0f);
     glm::mat4 projection    = glm::mat4(1.0f);
     model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-    view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    view  = glm::translate(view, glm::vec3(1.0f, 0.0f, -3.0f));
     projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
     shaders[0].setMat4("view", view);
@@ -211,20 +220,22 @@ void Application::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
-    textures[0].Use(0);
-    textures[1].Use(1);
-    textures[2].Use(2);
-    textures[3].Use(3);
+    for (size_t s = 0; s < shaders.size(); ++s) {
+        for (size_t t = 0; t < textures[s].size(); ++t) {
+            textures[s][t]->Use(static_cast<unsigned int>(t));
+        }
 
-    shaders[0].Use();
-    shaders[0].setInt("ourTexture", 0);
-    shaders[0].setInt("ourTexture1", 1);
-    shaders[0].setInt("ourTexture2", 2);
-    shaders[0].setInt("ourTexture3", 3);
+        shaders[s].Use();
+        shaders[s].setInt("ourTexture", 0);
+        shaders[s].setInt("ourTexture1", 1);
+        shaders[s].setInt("ourTexture2", 2);
+        shaders[s].setInt("ourTexture3", 3);
 
-    // Bind VAO and draw the triangle
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+        // Bind VAO and draw the triangle
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+
 
     // Unbind VAO for cleanliness
     glBindVertexArray(0);
