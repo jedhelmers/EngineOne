@@ -94,9 +94,8 @@ bool Application::init() {
         return -1;
     }
 
-    glEnable(GL_DEPTH_TEST);  
-
-
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     for (int i = 0; i < 10; ++i) {
         addItem();
@@ -105,7 +104,6 @@ bool Application::init() {
     // Optional: set swap interval (VSync)
     glfwSwapInterval(1);
 
-    
     LOG(INFO, (std::string("OpenGL Renderer: ") + reinterpret_cast<const char*>(glGetString(GL_RENDERER))).c_str());
     LOG(INFO, (std::string("OpenGL Version: ") + reinterpret_cast<const char*>(glGetString(GL_VERSION))).c_str());
 
@@ -160,7 +158,6 @@ void Application::addItem() {
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
-
     unsigned int vao, vbo, ebo;
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -169,7 +166,6 @@ void Application::addItem() {
     VAOs.push_back(vao);
     VBOs.push_back(vbo);
     EBOs.push_back(ebo);
-
 
     // Texture setup
     textures.push_back(std::vector<Texture*>{
@@ -182,19 +178,10 @@ void Application::addItem() {
     // Shader setup
     shaders.push_back(new Shader("shaders/vertex.glsl", "shaders/fragment.glsl"));
 
-
-    // Not sure why i have to call Use here
-    // shaders[0].Use();
-
+    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-    // glBindVertexArray(VAO);
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -218,6 +205,11 @@ void Application::run() {
         glfwSwapBuffers(m_window);
     }
 
+    for (int i = 0; i < VBOs.size(); ++i) {
+        glDeleteVertexArrays(1, &VAOs[i]);
+        glDeleteBuffers(1, &VBOs[i]);
+        glDeleteBuffers(1, &EBOs[i]);
+    }
     // glDeleteVertexArrays(1, &VAO);
     // glDeleteBuffers(1, &VBO);
 
@@ -234,25 +226,30 @@ void Application::processEvents() {
 }
 
 void Application::update() {
-    glm::mat4 model         = glm::mat4(1.0f);
-    glm::mat4 view          = glm::mat4(1.0f);
-    glm::mat4 projection    = glm::mat4(1.0f);
-    model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-    view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-
     for (unsigned int i = 0; i < shaders.size(); i++) {
-        shaders[i]->Use();  // Ensure the correct shader is active
+        shaders[i]->Use();
+
         glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 projection = glm::mat4(1.0f);
+
+        // First, position the cube in the world space
         model = glm::translate(model, cubePositions[i]);
-        float angle = 20.0f * i;
+
+        // Then, rotate it around its own axis
+        float angle = glfwGetTime() * 50.0f;  // Speed up rotation
         model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+
+        // Set the view and projection matrices
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
         shaders[i]->setMat4("view", view);
         shaders[i]->setMat4("model", model);
         shaders[i]->setMat4("projection", projection);
     }
-
 }
+
 
 void Application::render() {
     // Clear the screen
@@ -260,13 +257,13 @@ void Application::render() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
     for (size_t s = 0; s < shaders.size(); ++s) {
+        shaders[s]->Use();
         glBindVertexArray(VAOs[s]);
 
         for (size_t t = 0; t < textures[s].size(); ++t) {
             textures[s][t]->Use(static_cast<unsigned int>(t));
         }
 
-        shaders[s]->Use();
         shaders[s]->setInt("ourTexture", 0);
         shaders[s]->setInt("ourTexture1", 1);
         shaders[s]->setInt("ourTexture2", 2);
