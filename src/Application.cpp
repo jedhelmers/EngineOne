@@ -18,6 +18,20 @@
 // Utils
 #include "utils/logger.h"
 
+// world space positions of our cubes
+glm::vec3 cubePositions[] = {
+    glm::vec3( 0.0f,  0.0f,  0.0f),
+    glm::vec3( 2.0f,  5.0f, -15.0f),
+    glm::vec3(-1.5f, -2.2f, -2.5f),
+    glm::vec3(-3.8f, -2.0f, -12.3f),
+    glm::vec3( 2.4f, -0.4f, -3.5f),
+    glm::vec3(-1.7f,  3.0f, -7.5f),
+    glm::vec3( 1.3f, -2.0f, -2.5f),
+    glm::vec3( 1.5f,  2.0f, -2.5f),
+    glm::vec3( 1.5f,  0.2f, -1.5f),
+    glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -35,6 +49,11 @@ Application::~Application() {
         glfwDestroyWindow(m_window);
         m_window = nullptr;
     }
+
+    for (Shader* shader : shaders) {
+        delete shader;
+    }
+    shaders.clear();
 
     glfwTerminate();
 }
@@ -79,6 +98,10 @@ bool Application::init() {
 
 
 
+    addItem();
+    addItem();
+    addItem();
+    addItem();
     addItem();
     addItem();
 
@@ -143,15 +166,9 @@ void Application::addItem() {
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    // glGenBuffers(1, &EBO);
+    glGenBuffers(1, &EBO);
 
-    std::vector<Texture*> _textures;
     // Texture setup
-    // _textures.push_back(Texture("textures/wall.jpg"));
-    // _textures.push_back(Texture("textures/balls.jpg"));
-    // _textures.push_back(Texture("textures/Cat03.jpg"));
-    // _textures.push_back(Texture("textures/rambo.png"));
-
     textures.push_back(std::vector<Texture*>{
         new Texture("textures/wall.jpg"),
         new Texture("textures/balls.jpg"),
@@ -160,11 +177,11 @@ void Application::addItem() {
     });
 
     // Shader setup
-    Shader shader("../shaders/fragment.glsl", "../shaders/vertex.glsl");
-    shaders.push_back(shader);
+    shaders.push_back(new Shader("shaders/vertex.glsl", "shaders/fragment.glsl"));
+
 
     // Not sure why i have to call Use here
-    shaders[0].Use();
+    // shaders[0].Use();
 
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
@@ -188,7 +205,13 @@ void Application::run() {
         processEvents();
         update();
         render();
+
+        // Swap buffers
+        glfwSwapBuffers(m_window);
     }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
 
     glfwTerminate();
 }
@@ -210,38 +233,60 @@ void Application::update() {
     view  = glm::translate(view, glm::vec3(1.0f, 0.0f, -3.0f));
     projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-    shaders[0].setMat4("view", view);
-    shaders[0].setMat4("model", model);
-    shaders[0].setMat4("projection", projection);
+    // shaders[0]->setMat4("view", view);
+    // shaders[0]->setMat4("model", model);
+    // shaders[0]->setMat4("projection", projection);
+
+    for (unsigned int i = 0; i < shaders.size(); i++) {
+        // calculate the model matrix for each object and pass it to shader before drawing
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, cubePositions[i]);
+        float angle = 20.0f * i;
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+        shaders[i]->setMat4("view", view);
+        shaders[i]->setMat4("model", model);
+        shaders[i]->setMat4("projection", projection);
+
+        // glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 }
 
 void Application::render() {
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glBindVertexArray(VAO);
 
     for (size_t s = 0; s < shaders.size(); ++s) {
+
         for (size_t t = 0; t < textures[s].size(); ++t) {
             textures[s][t]->Use(static_cast<unsigned int>(t));
         }
 
-        shaders[s].Use();
-        shaders[s].setInt("ourTexture", 0);
-        shaders[s].setInt("ourTexture1", 1);
-        shaders[s].setInt("ourTexture2", 2);
-        shaders[s].setInt("ourTexture3", 3);
+        shaders[s]->Use();
+        shaders[s]->setInt("ourTexture", 0);
+        shaders[s]->setInt("ourTexture1", 1);
+        shaders[s]->setInt("ourTexture2", 2);
+        shaders[s]->setInt("ourTexture3", 3);
 
-        // Bind VAO and draw the triangle
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        // position attribute
+        // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        // glEnableVertexAttribArray(0);
+
+        // // Texture coord attribute
+        // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        // glEnableVertexAttribArray(1);
+
+        // glBindVertexArray(0);
+        
+    // Bind VAO and draw the triangle
+    glDrawArrays(GL_TRIANGLES, 0, 36);
     }
 
 
     // Unbind VAO for cleanliness
     glBindVertexArray(0);
-
-    // Swap buffers
-    glfwSwapBuffers(m_window);
 }
 
 
