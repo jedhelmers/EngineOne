@@ -36,9 +36,10 @@ private:
     int m_windowHeight = 600;
 
     unsigned int shaderProgram;
-    unsigned int VAO;
-    unsigned int VBO;
-    unsigned int EBO;
+    std::vector<unsigned int> VAOs;
+    std::vector<unsigned int> VBOs;
+    std::vector<unsigned int> EBOs;
+
 
     std::vector<Shader*> shaders;
     std::vector<std::vector<Texture*>> textures;

@@ -98,12 +98,9 @@ bool Application::init() {
 
 
 
-    addItem();
-    addItem();
-    addItem();
-    addItem();
-    addItem();
-    addItem();
+    for (int i = 0; i < 10; ++i) {
+        addItem();
+    }
 
     // Optional: set swap interval (VSync)
     glfwSwapInterval(1);
@@ -164,9 +161,15 @@ void Application::addItem() {
     };
 
 
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    unsigned int vao, vbo, ebo;
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+
+    VAOs.push_back(vao);
+    VBOs.push_back(vbo);
+    EBOs.push_back(ebo);
+
 
     // Texture setup
     textures.push_back(std::vector<Texture*>{
@@ -183,10 +186,15 @@ void Application::addItem() {
     // Not sure why i have to call Use here
     // shaders[0].Use();
 
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+
+    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+    // glBindVertexArray(VAO);
+    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -210,8 +218,8 @@ void Application::run() {
         glfwSwapBuffers(m_window);
     }
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    // glDeleteVertexArrays(1, &VAO);
+    // glDeleteBuffers(1, &VBO);
 
     glfwTerminate();
 }
@@ -230,15 +238,11 @@ void Application::update() {
     glm::mat4 view          = glm::mat4(1.0f);
     glm::mat4 projection    = glm::mat4(1.0f);
     model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-    view  = glm::translate(view, glm::vec3(1.0f, 0.0f, -3.0f));
+    view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
     projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-    // shaders[0]->setMat4("view", view);
-    // shaders[0]->setMat4("model", model);
-    // shaders[0]->setMat4("projection", projection);
-
     for (unsigned int i = 0; i < shaders.size(); i++) {
-        // calculate the model matrix for each object and pass it to shader before drawing
+        shaders[i]->Use();  // Ensure the correct shader is active
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, cubePositions[i]);
         float angle = 20.0f * i;
@@ -246,18 +250,17 @@ void Application::update() {
         shaders[i]->setMat4("view", view);
         shaders[i]->setMat4("model", model);
         shaders[i]->setMat4("projection", projection);
-
-        // glDrawArrays(GL_TRIANGLES, 0, 36);
     }
+
 }
 
 void Application::render() {
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glBindVertexArray(VAO);
 
     for (size_t s = 0; s < shaders.size(); ++s) {
+        glBindVertexArray(VAOs[s]);
 
         for (size_t t = 0; t < textures[s].size(); ++t) {
             textures[s][t]->Use(static_cast<unsigned int>(t));
@@ -269,21 +272,8 @@ void Application::render() {
         shaders[s]->setInt("ourTexture2", 2);
         shaders[s]->setInt("ourTexture3", 3);
 
-
-        // position attribute
-        // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-        // glEnableVertexAttribArray(0);
-
-        // // Texture coord attribute
-        // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-        // glEnableVertexAttribArray(1);
-
-        // glBindVertexArray(0);
-        
-    // Bind VAO and draw the triangle
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
     }
-
 
     // Unbind VAO for cleanliness
     glBindVertexArray(0);
