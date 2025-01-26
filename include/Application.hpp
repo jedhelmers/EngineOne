@@ -40,7 +40,6 @@ private:
     std::vector<unsigned int> VBOs;
     std::vector<unsigned int> EBOs;
 
-
     std::vector<Shader*> shaders;
     std::vector<std::vector<Texture*>> textures;
 };
