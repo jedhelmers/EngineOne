@@ -22,6 +22,7 @@ public:
     void run();
 
     void addItem();
+    void addLight();
 
 private:
     // Private methods
@@ -42,4 +43,15 @@ private:
 
     std::vector<Shader*> shaders;
     std::vector<std::vector<Texture*>> textures;
+
+
+    // std::vector<unsigned int> LIGHT_VAOs;
+    // std::vector<unsigned int> LIGHT_VBOs;
+    // std::vector<unsigned int> LIGHT_EBOs;
+
+    // std::vector<Shader*> light_shaders;
+    Shader* lightingShader;
+    Shader* lightCubeShader;
+    unsigned int VBO, cubeVAO;
+    unsigned int lightCubeVAO;
 };
