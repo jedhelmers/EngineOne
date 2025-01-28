@@ -277,7 +277,7 @@ void Application::addItem() {
     });
 
     // Shader setup
-    shaders.push_back(new Shader("shaders/vertex.glsl", "shaders/fragment.glsl"));
+    shaders.push_back(new Shader("../shaders/vertex.glsl", "../shaders/fragment.glsl"));
 
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(vao);
@@ -355,6 +355,10 @@ void Application::update() {
         shaders[i]->setMat4("view", view);
         shaders[i]->setMat4("model", model);
         shaders[i]->setMat4("projection", projection);
+
+        shaders[i]->setFloat("ambientStrength", 0.8f);
+        shaders[i]->setVec3("lightColor", 0.50f, 0.20f, 0.40f);
+        shaders[i]->setVec3("objectColor", 0.50f, 0.20f, 0.40f);
     }
 }
 
