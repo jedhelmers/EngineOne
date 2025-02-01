@@ -119,9 +119,9 @@ bool Application::init() {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    // for (int i = 0; i < 6; ++i) {
-    //     addItem();
-    // }
+    for (int i = 0; i < 6; ++i) {
+        addItem();
+    }
 
     // build and compile our shader zprogram
     // ------------------------------------
@@ -219,47 +219,47 @@ void Application::addItem() {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+        
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+        
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
 
     unsigned int vao, vbo, ebo;
@@ -271,30 +271,25 @@ void Application::addItem() {
     VBOs.push_back(vbo);
     EBOs.push_back(ebo);
 
-    // Texture setup
-    textures.push_back(std::vector<Texture*>{
-        new Texture("textures/wall.jpg"),
-        new Texture("textures/balls.jpg"),
-        new Texture("textures/Cat03.jpg"),
-        new Texture("textures/rambo.png")
-    });
-
     // Shader setup
-    shaders.push_back(new Shader("../shaders/vertex.glsl", "../shaders/fragment.glsl"));
+    shaders.push_back(new Shader("../shaders/lighting.vs", "../shaders/lighting.frag"));
 
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-    glBindVertexArray(vao);
+    // first, configure the cube's VAO (and VBO)
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    glBindVertexArray(vao);
+
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
 
-    // Texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    // normal attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
-
     glBindVertexArray(0);
 }
 
@@ -370,64 +365,55 @@ void Application::render() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    for (size_t s = 0; s < shaders.size(); ++s) {
-        shaders[s]->Use();
-        glBindVertexArray(VAOs[s]);
-
-        for (size_t t = 0; t < textures[s].size(); ++t) {
-            textures[s][t]->Use(static_cast<unsigned int>(t));
-        }
-
-        shaders[s]->setInt("ourTexture", 0);
-        shaders[s]->setInt("ourTexture1", 1);
-        shaders[s]->setInt("ourTexture2", 2);
-        shaders[s]->setInt("ourTexture3", 3);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
-
-    // LIGHTING
-    // BOX
-    lightingShader->Use();
-    lightingShader->setVec3("light.position", lightPos);
-    lightingShader->setVec3("viewPos", camera.Position);
-
-    // Light porperties
-    glm::vec3 lightColor = glm::vec3(2.0f, 0.7f, 1.3f);
-    glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f); // decrease the influence
-    glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // low influence
-
-    lightingShader->setVec3("light.ambient", ambientColor);
-    lightingShader->setVec3("light.diffuse", diffuseColor);
-    lightingShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-
-    // Material porperties
-    lightingShader->setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-    lightingShader->setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
-    lightingShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-    lightingShader->setFloat("material.shininess", 2.0f);
-
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
-    lightingShader->setMat4("projection", projection);
-    lightingShader->setMat4("view", view);
+    
+    for (size_t s = 0; s < shaders.size(); ++s) {
+        // LIGHTING
+        // BOX
+        lightingShader->Use();
+        lightingShader->setVec3("light.position", lightPos);
+        lightingShader->setVec3("viewPos", camera.Position);
 
-    // World transformation
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-    lightingShader->setMat4("model", model);
+        // Light porperties
+        glm::vec3 lightColor = glm::vec3(2.0f, 0.7f, 1.3f);
+        glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f); // decrease the influence
+        glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // low influence
 
-    // render the cube
-    glBindVertexArray(containerVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+        lightingShader->setVec3("light.ambient", ambientColor);
+        lightingShader->setVec3("light.diffuse", diffuseColor);
+        lightingShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+        // Material porperties
+        lightingShader->setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+        lightingShader->setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+        lightingShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+        lightingShader->setFloat("material.shininess", 2.0f);
+
+        // view/projection transformations
+        // glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // glm::mat4 view = camera.GetViewMatrix();
+        lightingShader->setMat4("projection", projection);
+        lightingShader->setMat4("view", view);
+
+        // World transformation
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, cubePositions[s]);
+        model = glm::rotate(model, (float)glfwGetTime() * (s + 1), glm::vec3(0.5f, 1.0f, 0.0f));
+        lightingShader->setMat4("model", model);
+
+        // render the cube
+        glBindVertexArray(containerVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
 
     // LAMP
     lightCubeShader->Use();
     lightCubeShader->setMat4("projection", projection);
     lightCubeShader->setMat4("view", view);
-    model = glm::mat4(1.0f);
+    glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, lightPos);
     model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
     lightCubeShader->setMat4("model", model);
