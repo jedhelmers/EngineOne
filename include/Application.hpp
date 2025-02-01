@@ -52,6 +52,5 @@ private:
     // std::vector<Shader*> light_shaders;
     Shader* lightingShader;
     Shader* lightCubeShader;
-    unsigned int VBO, cubeVAO;
-    unsigned int lightCubeVAO;
+    GLuint VBO, containerVAO, lightVAO;
 };

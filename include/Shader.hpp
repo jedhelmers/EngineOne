@@ -17,11 +17,12 @@ class Shader {
         void setMat4(const std::string &name, const glm::mat4 &mat) const;
         void setVec3(const std::string &name, const glm::vec3 &vec) const;
         void setVec3(const std::string &name, float x, float y, float z) const;
+        uint32_t getID() const;
 
     private:
         unsigned int vertexShader;
         unsigned int fragmentShader;
         unsigned int shaderProgram;
 
-        uint32_t programID;
+        GLuint programID;
 };
