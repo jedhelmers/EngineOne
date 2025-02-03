@@ -81,6 +81,17 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMENT "Copying textures to the build directory..."
 )
 
+# Copy assets to the build directory
+set(ASSETS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+set(ASSETS_DEST_DIR "${CMAKE_CURRENT_BINARY_DIR}/assets")
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${ASSETS_SOURCE_DIR}"
+        "${ASSETS_DEST_DIR}"
+    COMMENT "Copying assets to the build directory..."
+)
+
 # Copy shaders to the build directory
 set(SHADERS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
 set(SHADERS_DEST_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders")

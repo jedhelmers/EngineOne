@@ -37,9 +37,9 @@ private:
     int m_windowHeight = 600;
 
     unsigned int shaderProgram;
-    std::vector<unsigned int> VAOs;
-    std::vector<unsigned int> VBOs;
-    std::vector<unsigned int> EBOs;
+    std::vector<GLuint> VAOs;
+    std::vector<GLuint> VBOs;
+    std::vector<GLuint> EBOs;
 
     std::vector<Shader*> shaders;
     std::vector<std::vector<Texture*>> textures;
@@ -53,4 +53,7 @@ private:
     Shader* lightingShader;
     Shader* lightCubeShader;
     GLuint VBO, containerVAO, lightVAO;
+
+    GLuint diffuseMap;
+    GLuint specularMap;
 };
